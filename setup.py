@@ -27,8 +27,12 @@ setuptools.setup(
     ],
     extras_require={
         'dev': [
+            # Linting
             'flake8',
             'pep8-naming',
+            # Test code
+            'requests',
+            'pypdf',
         ]
     },
     classifiers=[

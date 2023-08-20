@@ -29,3 +29,6 @@ jobs:
       - name: lint
         run:
           flake8
+      - name: mypy
+        run:
+          mypy --check-untyped-defs piplicenses_lib/ tests/ 

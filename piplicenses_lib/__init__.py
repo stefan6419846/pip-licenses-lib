@@ -215,8 +215,8 @@ def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # FI
     :return: The corresponding `sys.path` entries.
     """
     script = "import sys; print(' '.join(filter(bool, sys.path)))"
-    output = subprocess.run(
-        [executable, "-c", script],  # type: ignore[call-overload]  # FIXME: Remove after dropping Python <= 3.7.
+    output = subprocess.run(  # type: ignore[call-overload]  # FIXME: Remove after dropping Python <= 3.7.
+        [executable, "-c", script],
         **dict(capture_output=True) if sys.version_info >= (3, 7) else dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE),  # type: ignore[call-overload,dict-item]  # noqa: E501
         env={**os.environ, "PYTHONPATH": "", "VIRTUAL_ENV": ""},
     )

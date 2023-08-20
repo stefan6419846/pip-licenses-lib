@@ -38,8 +38,8 @@ try:
     from importlib.metadata import Distribution
 except ImportError:
     # Python < 3.8
-    import importlib_metadata
-    from importlib_metadata import Distribution
+    import importlib_metadata  # type: ignore[import,no-redef]
+    from importlib_metadata import Distribution  # type: ignore[no-redef]
 from pathlib import Path
 from typing import Callable, cast, Dict, Generator, Iterator, List, Optional, Set, Tuple, Union
 
@@ -165,7 +165,7 @@ def get_package_included_files(
 
 def get_package_info(
         package: Distribution
-) -> Dict[str, Union[str, List[str], Set[str]]]:
+) -> Dict[str, Union[str, List[str], Set[str], Distribution]]:
     """
     Retrieve the relevant information for the given package.
 
@@ -176,7 +176,8 @@ def get_package_info(
         package, "LICEN[CS]E.*|COPYING.*"
     ))
     notice_files = list(get_package_included_files(package, "NOTICE.*"))
-    package_info: Dict[str, Union[str, List[str]]] = {
+    requirements = set(package.requires or [])
+    package_info: Dict[str, Union[str, List[str], Set[str], Distribution]] = {
         "name": package.metadata["name"],
         "version": package.version,
         "namever": f"{package.metadata['name']} {package.version}",
@@ -184,7 +185,7 @@ def get_package_info(
         "licensetext": [entry[1] for entry in license_files],
         "noticefile": [entry[0] for entry in notice_files],
         "noticetext": [entry[1] for entry in notice_files],
-        "requires": package.requires,
+        "requires": requirements,
         "distribution": package,
     }
     metadata = package.metadata
@@ -206,7 +207,7 @@ def get_package_info(
     return package_info
 
 
-def get_python_sys_path(executable: Union[str, Path]) -> List[str]:
+def get_python_sys_path(executable: Union[str, os.PathLike[str]]) -> List[str]:
     """
     Get the value of `sys.path` for the given Python executable.
 
@@ -216,7 +217,7 @@ def get_python_sys_path(executable: Union[str, Path]) -> List[str]:
     script = "import sys; print(' '.join(filter(bool, sys.path)))"
     output = subprocess.run(
         [executable, "-c", script],
-        **dict(capture_output=True) if sys.version_info >= (3, 7) else dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE),
+        **dict(capture_output=True) if sys.version_info >= (3, 7) else dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE),  # type: ignore[call-overload,dict-item]  # noqa: E501
         env={**os.environ, "PYTHONPATH": "", "VIRTUAL_ENV": ""},
     )
     return output.stdout.decode().strip().split()
@@ -224,7 +225,7 @@ def get_python_sys_path(executable: Union[str, Path]) -> List[str]:
 
 def get_packages(
         from_source: 'FromArg', python_path: Optional[Union[str, Path]] = None,
-) -> Iterator[Dict[str, Union[str, List[str], Set[str]]]]:
+) -> Iterator[Dict[str, Union[str, List[str], Set[str], Distribution]]]:
     """
     Get the packages for the given Python interpreter.
 

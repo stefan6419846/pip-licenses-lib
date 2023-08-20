@@ -207,7 +207,7 @@ def get_package_info(
     return package_info
 
 
-def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:
+def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # FIXME: Use `os.PathLike[str]` when dropping Python <= 3.7.
     """
     Get the value of `sys.path` for the given Python executable.
 
@@ -216,7 +216,7 @@ def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:
     """
     script = "import sys; print(' '.join(filter(bool, sys.path)))"
     output = subprocess.run(
-        [executable, "-c", script],
+        [executable, "-c", script],  # type: ignore[call-overload]  # FIXME: Remove after dropping Python <= 3.7.
         **dict(capture_output=True) if sys.version_info >= (3, 7) else dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE),  # type: ignore[call-overload,dict-item]  # noqa: E501
         env={**os.environ, "PYTHONPATH": "", "VIRTUAL_ENV": ""},
     )

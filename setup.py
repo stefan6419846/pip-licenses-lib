@@ -30,6 +30,8 @@ setuptools.setup(
             # Linting
             'flake8',
             'pep8-naming',
+            'mypy',
+            'types-requests',
             # Test code
             'requests',
             'pypdf',
@@ -44,6 +46,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3 :: Only',
         'Topic :: Software Development',
         'Topic :: Utilities',
+        'Typing :: Typed',
     ],
     keywords=['open source', 'license', 'package', 'dependency', 'licensing'],
 )

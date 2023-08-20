@@ -32,7 +32,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
-from typing import Generator, List, Optional
+from typing import cast, Any, Dict, Generator, List, Optional, Set, Union
 from unittest import TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
@@ -44,7 +44,7 @@ from requests.utils import CaseInsensitiveDict
 
 class EnvBuilder(_EnvBuilder):
     context = None
-    executable = None
+    executable: str = ""
 
     def post_setup(self, context: SimpleNamespace) -> None:
         self.context = context
@@ -140,6 +140,7 @@ class ReadFileTestCase(TestCase):
             fd.write("Test text\nabc\n")
             fd.seek(0)
             for path in [fd.name, Path(fd.name)]:
+                path = cast(Union[str, Path], path)
                 with self.subTest(path=path):
                     self.assertEqual("Test text\nabc\n", read_file(path))
 
@@ -151,6 +152,8 @@ class ReadFileTestCase(TestCase):
 
 
 class GetPackageIncludedFilesTestCase(TestCase):
+    pypdf: Distribution = None  # type: ignore[assignment]
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -178,24 +181,24 @@ class GetPackageIncludedFilesTestCase(TestCase):
 
 class DummyDistribution:
     class MyDict(CaseInsensitiveDict):
-        def get_all(self, key, default=None):
+        def get_all(self, key: str, default: Optional[Any] = None):
             value = self.get(key, default=default)
             if not isinstance(value, list):
                 raise ValueError("get_all called for non-list value")
             return value
 
-    def __init__(self, name="dummy", version="42"):
+    def __init__(self, name: str = "dummy", version: str = "42"):
         self.metadata = self.MyDict(name=name)
-        self.files = []
+        self.files: List[Any] = []
         self.version = version
-        self.requires = []
+        self.requires: List[str] = []
 
 
 class GetPackageInfoTestCase(TestCase):
-    def assertStartsWith(self, expected, actual, message=None):  # noqa: N802
+    def assertStartsWith(self, expected: str, actual: str, message: Optional[str] = None):  # noqa: N802
         self.assertEqual(expected, actual[:len(expected)], message)
 
-    def assertEndsWith(self, expected, actual, message=None):  # noqa: N802
+    def assertEndsWith(self, expected: str, actual: str, message: Optional[str] = None):  # noqa: N802
         self.assertEqual(expected, actual[-len(expected):], message)
 
     def test_get_package_info(self):
@@ -207,13 +210,15 @@ class GetPackageInfoTestCase(TestCase):
         self.assertEqual("pypdf", package_info["name"])
         self.assertEqual(version, package_info["version"])
         self.assertEqual(f"pypdf {version}", package_info["namever"])
-        self.assertEqual(1, len(package_info["licensefile"]), package_info["licensefile"])
-        self.assertEndsWith(".dist-info/LICENSE", package_info["licensefile"][0])
-        self.assertEqual(1, len(package_info["licensetext"]), package_info["licensetext"])
-        self.assertStartsWith("Copyright (c) 2006-2008, Mathieu Fenniak\nSome contributions copyright (c) 2007, Ashish", package_info["licensetext"][0])
-        self.assertEndsWith(", EVEN IF ADVISED OF THE\nPOSSIBILITY OF SUCH DAMAGE.\n", package_info["licensetext"][0])
-        self.assertEqual(0, len(package_info["noticefile"]), package_info["noticefile"])
-        self.assertEqual(0, len(package_info["noticetext"]), package_info["noticetext"])
+        license_file = cast(List[str], package_info["licensefile"])
+        license_text = cast(List[str], package_info["licensetext"])
+        self.assertEqual(1, len(license_file), license_file)
+        self.assertEndsWith(".dist-info/LICENSE", license_file[0])
+        self.assertEqual(1, len(license_text), license_text)
+        self.assertStartsWith("Copyright (c) 2006-2008, Mathieu Fenniak\nSome contributions copyright (c) 2007, Ashish", license_text[0])
+        self.assertEndsWith(", EVEN IF ADVISED OF THE\nPOSSIBILITY OF SUCH DAMAGE.\n", license_text[0])
+        self.assertEqual(0, len(cast(List[str], package_info["noticefile"])), package_info["noticefile"])
+        self.assertEqual(0, len(cast(List[str], package_info["noticetext"])), package_info["noticetext"])
         self.assertIs(distribution, package_info["distribution"])
         self.assertEqual("https://github.com/py-pdf/pypdf", package_info["home-page"])
         self.assertEqual("Mathieu Fenniak <biziqe@mathieu.fenniak.net>", package_info["author"])
@@ -221,37 +226,37 @@ class GetPackageInfoTestCase(TestCase):
         self.assertEqual(LICENSE_UNKNOWN, package_info["license"])
         self.assertEqual("A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files", package_info["summary"])
         self.assertEqual(["BSD License"], package_info["license_classifier"])
-        self.assertIn('black ; extra == "dev"', package_info["requires"])
+        self.assertIn('black ; extra == "dev"', cast(List[str], package_info["requires"]))
 
     def test_get_package_info__author_field(self):
         distribution = DummyDistribution()
         distribution.metadata["author"] = "Max Mustermann"
         distribution.metadata["author-email"] = "max@localhost"
-        self.assertEqual("Max Mustermann", get_package_info(distribution)["author"])  # type: ignore
+        self.assertEqual("Max Mustermann", get_package_info(distribution)["author"])  # type: ignore[arg-type]
 
     def test_get_package_info__author_email_field(self):
         distribution = DummyDistribution()
         distribution.metadata["author-email"] = "max@localhost"
-        self.assertEqual("max@localhost", get_package_info(distribution)["author"])  # type: ignore
+        self.assertEqual("max@localhost", get_package_info(distribution)["author"])  # type: ignore[arg-type]
 
     def test_get_package_info__no_author_field(self):
         distribution = DummyDistribution()
-        self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution)["author"])  # type: ignore
+        self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution)["author"])  # type: ignore[arg-type]
 
     def test_get_package_info__maintainer_field(self):
         distribution = DummyDistribution()
         distribution.metadata["maintainer"] = "Max Mustermann"
         distribution.metadata["maintainer-email"] = "max@localhost"
-        self.assertEqual("Max Mustermann", get_package_info(distribution)["maintainer"])  # type: ignore
+        self.assertEqual("Max Mustermann", get_package_info(distribution)["maintainer"])  # type: ignore[arg-type]
 
     def test_get_package_info__maintainer_email_field(self):
         distribution = DummyDistribution()
         distribution.metadata["maintainer-email"] = "max@localhost"
-        self.assertEqual("max@localhost", get_package_info(distribution)["maintainer"])  # type: ignore
+        self.assertEqual("max@localhost", get_package_info(distribution)["maintainer"])  # type: ignore[arg-type]
 
     def test_get_package_info__no_maintainer_field(self):
         distribution = DummyDistribution()
-        self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution)["maintainer"])  # type: ignore
+        self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution)["maintainer"])  # type: ignore[arg-type]
 
 
 class GetPackagesTestCase(TestCase):
@@ -264,11 +269,13 @@ class GetPackagesTestCase(TestCase):
     def test_get_packages__includes_license_names(self):
         with create_temporary_venv() as venv:
             packages = get_packages(from_source=FromArg.MIXED, python_path=venv.executable)
-            license_names = {package["name"]: package.get("license_names") for package in packages}
+            license_names: Dict[str, Set[str]] = {
+                cast(str, package["name"]): cast(Set[str], package.get("license_names")) for package in packages
+            }
 
         for package in ["pip", "setuptools"]:
             self.assertTrue(license_names.get(package))
-            self.assertIn("MIT License", license_names.get(package))
+            self.assertIn("MIT License", license_names[package])
 
     def test_get_packages__python_path(self):
         with create_temporary_venv() as venv:

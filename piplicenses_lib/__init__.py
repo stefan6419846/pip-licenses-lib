@@ -207,7 +207,7 @@ def get_package_info(
     return package_info
 
 
-def get_python_sys_path(executable: Union[str, os.PathLike[str]]) -> List[str]:
+def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:
     """
     Get the value of `sys.path` for the given Python executable.
 

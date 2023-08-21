@@ -13,7 +13,7 @@ ROOT_DIRECTORY = Path(__file__).parent.resolve()
 setuptools.setup(
     name='pip-licenses-lib',
     description='Retrieve the software license list of Python packages installed with pip.',
-    version='0.1.0',
+    version='0.1.1',
     license='MIT',
     long_description=Path(ROOT_DIRECTORY / 'README.md').read_text(encoding='UTF-8'),
     long_description_content_type='text/markdown',

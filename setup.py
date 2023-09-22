@@ -29,6 +29,7 @@ setuptools.setup(
         'dev': [
             # Linting
             'flake8',
+            'flake8-bugbear',
             'pep8-naming',
             'mypy',
             'types-requests',

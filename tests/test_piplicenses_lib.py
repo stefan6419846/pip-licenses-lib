@@ -28,6 +28,7 @@ SOFTWARE.
 # from __future__ import annotations
 
 import subprocess
+import sys
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
@@ -263,8 +264,13 @@ class GetPackagesTestCase(TestCase):
     def test_get_packages(self):
         packages = get_packages(from_source=FromArg.MIXED)
         package_names = {package["name"] for package in packages}
-        for package in ["pip", "setuptools", "pypdf"]:
+        for package in ["pip", "pypdf"]:
             self.assertIn(package, package_names)
+        # `setuptools` is not being shipped by default anymore since Python 3.12.
+        if sys.version_info < (3, 12):
+            self.assertIn("setuptools", package_names)
+        else:
+            self.assertNotIn("setuptools", package_names)
 
     def test_get_packages__includes_license_names(self):
         with create_temporary_venv() as venv:
@@ -273,16 +279,27 @@ class GetPackagesTestCase(TestCase):
                 cast(str, package["name"]): cast(Set[str], package.get("license_names")) for package in packages
             }
 
-        for package in ["pip", "setuptools"]:
+        for package in ["pip"]:
             self.assertTrue(license_names.get(package))
             self.assertIn("MIT License", license_names[package])
+
+        # `setuptools` is not being shipped by default anymore since Python 3.12.
+        if sys.version_info < (3, 12):
+            self.assertTrue(license_names.get("setuptools))
+            self.assertIn("MIT License", license_names["setuptools"])
+        else:
+            self.assertFalse(license_names.get("setuptools"))
 
     def test_get_packages__python_path(self):
         with create_temporary_venv() as venv:
             packages = get_packages(from_source=FromArg.MIXED, python_path=venv.executable)
             package_names = {package["name"] for package in packages}
 
-        self.assertSetEqual({"pip", "setuptools"}, package_names)
+        # `setuptools` is not being shipped by default anymore since Python 3.12.
+        if sys.version_info < (3, 12):
+            self.assertSetEqual({"pip", "setuptools"}, package_names)
+        else:
+            self.assertSetEqual({"pip"}, package_names)
 
 
 class FindLicenseFromClassifier(TestCase):

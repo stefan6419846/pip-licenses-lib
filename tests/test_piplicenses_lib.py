@@ -285,7 +285,7 @@ class GetPackagesTestCase(TestCase):
 
         # `setuptools` is not being shipped by default anymore since Python 3.12.
         if sys.version_info < (3, 12):
-            self.assertTrue(license_names.get("setuptools))
+            self.assertTrue(license_names.get("setuptools"))
             self.assertIn("MIT License", license_names["setuptools"])
         else:
             self.assertFalse(license_names.get("setuptools"))

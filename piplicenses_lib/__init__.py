@@ -194,7 +194,7 @@ def get_package_info(
         for field_selector_function in field_selector_functions:
             # Type hint of `Distribution.metadata` states `PackageMetadata`
             # but it's actually of type `email.Message`
-            value = field_selector_function(metadata)
+            value = field_selector_function(metadata)  # type: ignore[arg-type,unused-ignore]  # noqa: E501  # FIXME: Remove `unused-ignore` when dropping Python <= 3.9.
             if value:
                 break
         package_info[field_name] = value or LICENSE_UNKNOWN

@@ -192,7 +192,7 @@ class GetPackageIncludedFilesTestCase(TestCase):
 
 
 class DummyDistribution:
-    class MyDict(CaseInsensitiveDict[Any]):
+    class MyDict(CaseInsensitiveDict):  # type: ignore[type-arg]  # noqa: E501  # FIXME: Use `CaseInsensitiveDict[Any]` when dropping Python <= 3.8.
         def get_all(self, key: str, default: Optional[Any] = None) -> List[Any]:
             value = self.get(key, default=default)
             if not isinstance(value, list):

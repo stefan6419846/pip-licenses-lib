@@ -31,5 +31,5 @@ jobs:
           flake8
       - name: mypy
         run:
-          mypy --check-untyped-defs piplicenses_lib/ tests/
+          mypy --strict piplicenses_lib/ tests/
         if: ${{ matrix.python != '3.7' }}

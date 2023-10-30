@@ -38,8 +38,19 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
 
-from piplicenses_lib import Distribution, extract_homepage, find_license_from_classifier, FromArg, get_packages, get_package_included_files, \
-    get_package_info, LICENSE_UNKNOWN, normalize_package_name, read_file, select_license_by_source
+from piplicenses_lib import (  # type: ignore[attr-defined]
+    Distribution,
+    extract_homepage,
+    find_license_from_classifier,
+    FromArg,
+    get_packages,
+    get_package_included_files,
+    get_package_info,
+    LICENSE_UNKNOWN,
+    normalize_package_name,
+    read_file,
+    select_license_by_source
+)
 from requests.utils import CaseInsensitiveDict
 
 
@@ -65,14 +76,14 @@ def create_temporary_venv(additional_packages: Optional[List[str]] = None) -> Ge
 
 
 class ExtractHomepageTestCase(TestCase):
-    def test_extract_homepage__home_page_set(self):
+    def test_extract_homepage__home_page_set(self) -> None:
         metadata = MagicMock()
         metadata.get.return_value = "Foobar"
-        self.assertEqual("Foobar", extract_homepage(metadata=metadata))  # type: ignore
+        self.assertEqual("Foobar", extract_homepage(metadata=metadata))
 
         metadata.get.assert_called_once_with("home-page", None)
 
-    def test_extract_homepage__project_url_fallback(self):
+    def test_extract_homepage__project_url_fallback(self) -> None:
         metadata = MagicMock()
         metadata.get.return_value = None
 
@@ -82,11 +93,11 @@ class ExtractHomepageTestCase(TestCase):
             "Homepage, homepage",
         ]
 
-        self.assertEqual("homepage", extract_homepage(metadata=metadata))  # type: ignore
+        self.assertEqual("homepage", extract_homepage(metadata=metadata))
 
         metadata.get_all.assert_called_once_with("Project-URL", [])
 
-    def test_extract_homepage__project_url_fallback__multiple_parts(self):
+    def test_extract_homepage__project_url_fallback__multiple_parts(self) -> None:
         metadata = MagicMock()
         metadata.get.return_value = None
 
@@ -96,22 +107,22 @@ class ExtractHomepageTestCase(TestCase):
             "Homepage, homepage, foo, bar",
         ]
 
-        self.assertEqual("homepage, foo, bar", extract_homepage(metadata=metadata))  # type: ignore
+        self.assertEqual("homepage, foo, bar", extract_homepage(metadata=metadata))
 
         metadata.get_all.assert_called_once_with("Project-URL", [])
 
-    def test_extract_homepage__empty(self):
+    def test_extract_homepage__empty(self) -> None:
         metadata = MagicMock()
 
         metadata.get.return_value = None
         metadata.get_all.return_value = []
 
-        self.assertIsNone(extract_homepage(metadata=metadata))  # type: ignore
+        self.assertIsNone(extract_homepage(metadata=metadata))
 
         metadata.get.assert_called_once_with("home-page", None)
         metadata.get_all.assert_called_once_with("Project-URL", [])
 
-    def test_extract_homepage__project_url_fallback__capitalisation(self):
+    def test_extract_homepage__project_url_fallback__capitalisation(self) -> None:
         metadata = MagicMock()
         metadata.get.return_value = None
 
@@ -121,13 +132,13 @@ class ExtractHomepageTestCase(TestCase):
             "homepage, homepage",
         ]
 
-        self.assertEqual("homepage", extract_homepage(metadata=metadata))  # type: ignore
+        self.assertEqual("homepage", extract_homepage(metadata=metadata))
 
         metadata.get_all.assert_called_once_with("Project-URL", [])
 
 
 class NormalizePackageNameTestCase(TestCase):
-    def test_normalize_package_name(self):
+    def test_normalize_package_name(self) -> None:
         expected_normalized_name = "pip-licenses"
 
         for name in ["pip_licenses", "pip.licenses", "Pip-Licenses"]:
@@ -136,7 +147,7 @@ class NormalizePackageNameTestCase(TestCase):
 
 
 class ReadFileTestCase(TestCase):
-    def test_read_file__regular(self):
+    def test_read_file__regular(self) -> None:
         with NamedTemporaryFile(mode="w+t") as fd:
             fd.write("Test text\nabc\n")
             fd.seek(0)
@@ -145,7 +156,7 @@ class ReadFileTestCase(TestCase):
                 with self.subTest(path=path):
                     self.assertEqual("Test text\nabc\n", read_file(path))
 
-    def test_read_file__replace(self):
+    def test_read_file__replace(self) -> None:
         with NamedTemporaryFile(mode="w+b") as fd:
             fd.write(b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x42abc123")
             fd.seek(0)
@@ -156,21 +167,21 @@ class GetPackageIncludedFilesTestCase(TestCase):
     pypdf: Distribution = None  # type: ignore[assignment]
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         super().setUpClass()
         cls.pypdf = Distribution.from_name("pypdf")
 
-    def test_get_package_included_files__no_match(self):
+    def test_get_package_included_files__no_match(self) -> None:
         results = list(get_package_included_files(package=self.pypdf, file_names_regex="MY_INVALID_FILE*"))
         self.assertListEqual([], results)
 
-    def test_get_package_included_file__one_match(self):
+    def test_get_package_included_file__one_match(self) -> None:
         results = list(get_package_included_files(package=self.pypdf, file_names_regex=r"pagerange\.py"))
         self.assertEqual(1, len(results), results)
         self.assertEqual(str(self.pypdf.locate_file("pypdf/pagerange.py")), results[0][0])
         self.assertIn("Representation and utils for ranges of PDF file pages.\n", results[0][1])
 
-    def test_get_package_included_file__multiple_matches(self):
+    def test_get_package_included_file__multiple_matches(self) -> None:
         results = list(get_package_included_files(package=self.pypdf, file_names_regex=r"_.*\.py"))
         self.assertLessEqual(1, len(results), results)
         paths = {result[0] for result in results}
@@ -181,8 +192,8 @@ class GetPackageIncludedFilesTestCase(TestCase):
 
 
 class DummyDistribution:
-    class MyDict(CaseInsensitiveDict):
-        def get_all(self, key: str, default: Optional[Any] = None):
+    class MyDict(CaseInsensitiveDict[Any]):
+        def get_all(self, key: str, default: Optional[Any] = None) -> List[Any]:
             value = self.get(key, default=default)
             if not isinstance(value, list):
                 raise ValueError("get_all called for non-list value")
@@ -196,13 +207,13 @@ class DummyDistribution:
 
 
 class GetPackageInfoTestCase(TestCase):
-    def assertStartsWith(self, expected: str, actual: str, message: Optional[str] = None):  # noqa: N802
+    def assertStartsWith(self, expected: str, actual: str, message: Optional[str] = None) -> None:  # noqa: N802
         self.assertEqual(expected, actual[:len(expected)], message)
 
-    def assertEndsWith(self, expected: str, actual: str, message: Optional[str] = None):  # noqa: N802
+    def assertEndsWith(self, expected: str, actual: str, message: Optional[str] = None) -> None:  # noqa: N802
         self.assertEqual(expected, actual[-len(expected):], message)
 
-    def test_get_package_info(self):
+    def test_get_package_info(self) -> None:
         import pypdf
         version = pypdf.__version__
 
@@ -229,39 +240,39 @@ class GetPackageInfoTestCase(TestCase):
         self.assertEqual(["BSD License"], package_info["license_classifier"])
         self.assertIn('black ; extra == "dev"', cast(List[str], package_info["requires"]))
 
-    def test_get_package_info__author_field(self):
+    def test_get_package_info__author_field(self) -> None:
         distribution = DummyDistribution()
         distribution.metadata["author"] = "Max Mustermann"
         distribution.metadata["author-email"] = "max@localhost"
         self.assertEqual("Max Mustermann", get_package_info(distribution)["author"])  # type: ignore[arg-type]
 
-    def test_get_package_info__author_email_field(self):
+    def test_get_package_info__author_email_field(self) -> None:
         distribution = DummyDistribution()
         distribution.metadata["author-email"] = "max@localhost"
         self.assertEqual("max@localhost", get_package_info(distribution)["author"])  # type: ignore[arg-type]
 
-    def test_get_package_info__no_author_field(self):
+    def test_get_package_info__no_author_field(self) -> None:
         distribution = DummyDistribution()
         self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution)["author"])  # type: ignore[arg-type]
 
-    def test_get_package_info__maintainer_field(self):
+    def test_get_package_info__maintainer_field(self) -> None:
         distribution = DummyDistribution()
         distribution.metadata["maintainer"] = "Max Mustermann"
         distribution.metadata["maintainer-email"] = "max@localhost"
         self.assertEqual("Max Mustermann", get_package_info(distribution)["maintainer"])  # type: ignore[arg-type]
 
-    def test_get_package_info__maintainer_email_field(self):
+    def test_get_package_info__maintainer_email_field(self) -> None:
         distribution = DummyDistribution()
         distribution.metadata["maintainer-email"] = "max@localhost"
         self.assertEqual("max@localhost", get_package_info(distribution)["maintainer"])  # type: ignore[arg-type]
 
-    def test_get_package_info__no_maintainer_field(self):
+    def test_get_package_info__no_maintainer_field(self) -> None:
         distribution = DummyDistribution()
         self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution)["maintainer"])  # type: ignore[arg-type]
 
 
 class GetPackagesTestCase(TestCase):
-    def test_get_packages(self):
+    def test_get_packages(self) -> None:
         packages = get_packages(from_source=FromArg.MIXED)
         package_names = {package["name"] for package in packages}
         for package in ["pip", "pypdf"]:
@@ -272,7 +283,7 @@ class GetPackagesTestCase(TestCase):
         else:
             self.assertNotIn("setuptools", package_names)
 
-    def test_get_packages__includes_license_names(self):
+    def test_get_packages__includes_license_names(self) -> None:
         with create_temporary_venv() as venv:
             packages = get_packages(from_source=FromArg.MIXED, python_path=venv.executable)
             license_names: Dict[str, Set[str]] = {
@@ -290,7 +301,7 @@ class GetPackagesTestCase(TestCase):
         else:
             self.assertFalse(license_names.get("setuptools"))
 
-    def test_get_packages__python_path(self):
+    def test_get_packages__python_path(self) -> None:
         with create_temporary_venv() as venv:
             packages = get_packages(from_source=FromArg.MIXED, python_path=venv.executable)
             package_names = {package["name"] for package in packages}
@@ -303,7 +314,7 @@ class GetPackagesTestCase(TestCase):
 
 
 class FindLicenseFromClassifier(TestCase):
-    def test_find_license_from_classifier__unrelated_classifiers_only(self):
+    def test_find_license_from_classifier__unrelated_classifiers_only(self) -> None:
         classifiers = [
             "Development Status :: 4 - Beta",
             "Environment :: Console",
@@ -317,7 +328,7 @@ class FindLicenseFromClassifier(TestCase):
             find_license_from_classifier(classifiers)
         )
 
-    def test_find_license_from_classifier__one_matching_classifier(self):
+    def test_find_license_from_classifier__one_matching_classifier(self) -> None:
         classifiers = [
             "Development Status :: 4 - Beta",
             "Environment :: Console",
@@ -332,14 +343,14 @@ class FindLicenseFromClassifier(TestCase):
             find_license_from_classifier(classifiers)
         )
 
-    def test_find_license_from_classifier(self):
+    def test_find_license_from_classifier(self) -> None:
         classifiers = ["License :: OSI Approved :: MIT License"]
         self.assertEqual(
             ["MIT License"],
             find_license_from_classifier(classifiers)
         )
 
-    def test_find_license_from_classifier__multiple_licenses(self):
+    def test_find_license_from_classifier__multiple_licenses(self) -> None:
         classifiers = [
             "License :: OSI Approved",
             "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -355,7 +366,7 @@ class FindLicenseFromClassifier(TestCase):
             find_license_from_classifier(classifiers),
         )
 
-    def test_find_license_from_classifier__no_classifiers(self):
+    def test_find_license_from_classifier__no_classifiers(self) -> None:
         classifiers: List[str] = []
         self.assertEqual([], find_license_from_classifier(classifiers))
 
@@ -391,7 +402,7 @@ class SelectLicenseBySourceTestCase(TestCase):
 
 
 class FromArgTestCase(TestCase):
-    def test_repr(self):
+    def test_repr(self) -> None:
         for name in ["META", "CLASSIFIER", "MIXED", "ALL"]:
             with self.subTest(name=name):
                 value = getattr(FromArg, name)

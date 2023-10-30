@@ -38,7 +38,7 @@ try:
     from importlib.metadata import Distribution
 except ImportError:
     # Python < 3.8
-    import importlib_metadata  # type: ignore[import,no-redef]
+    import importlib_metadata  # type: ignore[import-not-found,no-redef]
     from importlib_metadata import Distribution  # type: ignore[no-redef]
 from pathlib import Path
 from typing import Callable, cast, Dict, Generator, Iterator, List, Optional, Set, Tuple, Union
@@ -66,7 +66,7 @@ def extract_homepage(metadata: Message) -> Optional[str]:
     :param metadata: The package metadata to extract the homepage from.
     :return: The home page if applicable, None otherwise.
     """
-    homepage = metadata.get("home-page", None)
+    homepage: Optional[str] = metadata.get("home-page", None)
     if homepage is not None:
         return homepage
 
@@ -194,7 +194,7 @@ def get_package_info(
         for field_selector_function in field_selector_functions:
             # Type hint of `Distribution.metadata` states `PackageMetadata`
             # but it's actually of type `email.Message`
-            value = field_selector_function(metadata)  # type: ignore
+            value = field_selector_function(metadata)
             if value:
                 break
         package_info[field_name] = value or LICENSE_UNKNOWN
@@ -207,7 +207,7 @@ def get_package_info(
     return package_info
 
 
-def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # FIXME: Use `os.PathLike[str]` when dropping Python <= 3.7.
+def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # type: ignore[type-arg]  # noqa: E501  # FIXME: Use `os.PathLike[str]` when dropping Python <= 3.7.
     """
     Get the value of `sys.path` for the given Python executable.
 
@@ -217,10 +217,10 @@ def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # FI
     script = "import sys; print(' '.join(filter(bool, sys.path)))"
     output = subprocess.run(  # type: ignore[call-overload]  # FIXME: Remove after dropping Python <= 3.7.
         [executable, "-c", script],
-        **dict(capture_output=True) if sys.version_info >= (3, 7) else dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE),  # type: ignore[call-overload,dict-item]  # noqa: E501
+        **dict(capture_output=True) if sys.version_info >= (3, 7) else dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE),  # type: ignore[dict-item]  # noqa: E501
         env={**os.environ, "PYTHONPATH": "", "VIRTUAL_ENV": ""},
     )
-    return output.stdout.decode().strip().split()
+    return cast(List[str], output.stdout.decode().strip().split())
 
 
 def get_packages(

@@ -25,6 +25,7 @@ Changes compared to original version:
   * Include the license names and distribution object inside the result dictionary.
   * Do not use abbreviations for naming purposes.
   * Rewrite tests to use plain *unittest* functionality.
+  * Add option to skip retrieving license and notice files for faster version-only checks.
 
 ## Installation
 

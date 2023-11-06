@@ -1,5 +1,7 @@
 # Development version
 
+* Add option to skip retrieving license and notice files.
+
 # Version 0.1.1 - 2023-08-21
 
 * Fix type hints.

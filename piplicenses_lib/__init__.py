@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-# TODO: Enable and change type hints accordingly after dropping suppor for Python < 3.8.
+# TODO: Enable and change type hints accordingly after dropping support for Python < 3.8.
 # from __future__ import annotations
 
 import os
@@ -164,18 +164,23 @@ def get_package_included_files(
 
 
 def get_package_info(
-        package: Distribution
+        package: Distribution, include_files: bool = True,
 ) -> Dict[str, Union[str, List[str], Set[str], Distribution]]:
     """
     Retrieve the relevant information for the given package.
 
     :param package: The package to work on.
+    :param include_files: Retrieve license, copying and notice files.
     :return: The dictionary with the retrieved metadata.
     """
-    license_files = list(get_package_included_files(
-        package, "LICEN[CS]E.*|COPYING.*"
-    ))
-    notice_files = list(get_package_included_files(package, "NOTICE.*"))
+    if include_files:
+        license_files = list(get_package_included_files(
+            package, "LICEN[CS]E.*|COPYING.*"
+        ))
+        notice_files = list(get_package_included_files(package, "NOTICE.*"))
+    else:
+        license_files = []
+        notice_files = []
     requirements = set(package.requires or [])
     package_info: Dict[str, Union[str, List[str], Set[str], Distribution]] = {
         "name": package.metadata["name"],
@@ -215,16 +220,16 @@ def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # ty
     :return: The corresponding `sys.path` entries.
     """
     script = "import sys; print(' '.join(filter(bool, sys.path)))"
-    output = subprocess.run(  # type: ignore[call-overload]  # FIXME: Remove after dropping Python <= 3.7.
+    output: "subprocess.CompletedProcess[bytes]" = subprocess.run(  # type: ignore[call-overload]  # FIXME: Remove after dropping Python <= 3.7.
         [executable, "-c", script],
         **dict(capture_output=True) if sys.version_info >= (3, 7) else dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE),  # type: ignore[dict-item]  # noqa: E501
         env={**os.environ, "PYTHONPATH": "", "VIRTUAL_ENV": ""},
     )
-    return cast(List[str], output.stdout.decode().strip().split())
+    return output.stdout.decode().strip().split()
 
 
 def get_packages(
-        from_source: 'FromArg', python_path: Optional[Union[str, Path]] = None,
+        from_source: 'FromArg', python_path: Optional[Union[str, Path]] = None, include_files: bool = True,
 ) -> Iterator[Dict[str, Union[str, List[str], Set[str], Distribution]]]:
     """
     Get the packages for the given Python interpreter.
@@ -235,13 +240,14 @@ def get_packages(
                         regarding the license.
     :param python_path: The Python executable to use. If unset, uses the
                         current interpreter.
+    :param include_files: Retrieve license, copying and notice files.
     :return: The corresponding package dictionaries.
     """
     search_paths = sys.path if not python_path else get_python_sys_path(python_path)
     packages = importlib_metadata.distributions(path=search_paths)
 
     for package in packages:
-        package_info = get_package_info(package)
+        package_info = get_package_info(package=package, include_files=include_files)
 
         license_names = select_license_by_source(
             from_source,

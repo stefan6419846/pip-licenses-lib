@@ -225,7 +225,7 @@ def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # ty
         **dict(capture_output=True) if sys.version_info >= (3, 7) else dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE),  # type: ignore[dict-item]  # noqa: E501
         env={**os.environ, "PYTHONPATH": "", "VIRTUAL_ENV": ""},
     )
-    return cast(List[str], output.stdout.decode().strip().split())
+    return output.stdout.decode().strip().split()
 
 
 def get_packages(

@@ -13,13 +13,15 @@ ROOT_DIRECTORY = Path(__file__).parent.resolve()
 setuptools.setup(
     name='pip-licenses-lib',
     description='Retrieve the software license list of Python packages installed with pip.',
-    version='0.2.0',
+    version='0.2.1',
     license='MIT',
     long_description=Path(ROOT_DIRECTORY / 'README.md').read_text(encoding='UTF-8'),
     long_description_content_type='text/markdown',
     author='stefan6419846',
     url='https://github.com/stefan6419846/pip-licenses-lib',
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(
+        include=['piplicenses_lib', 'piplicenses_lib.*']
+    ),
     include_package_data=True,
     python_requires=">=3.6, <4",
     install_requires=[

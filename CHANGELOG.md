@@ -1,5 +1,9 @@
 # Development version
 
+# Version 0.2.1 - 2023-11-09
+
+* Avoid bundling the tests within wheels.
+
 # Version 0.2.0 - 2023-11-08
 
 * Add option to skip retrieving license and notice files.

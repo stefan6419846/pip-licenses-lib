@@ -36,4 +36,4 @@ jobs:
         if: ${{ matrix.python != '3.7' }}
       - name: codespell
         run:
-          codespell --check-hidden
+          codespell --check-hidden --skip ".git/*,.mypy*"

@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-# TODO: Enable and change type hints accordingly after dropping suppor for Python < 3.8.
+# TODO: Enable and change type hints accordingly after dropping support for Python < 3.8.
 # from __future__ import annotations
 
 import subprocess

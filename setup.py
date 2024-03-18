@@ -38,6 +38,8 @@ setuptools.setup(
             # Test code
             'requests',
             'pypdf',
+            # Spelling
+            'codespell',
         ]
     },
     classifiers=[

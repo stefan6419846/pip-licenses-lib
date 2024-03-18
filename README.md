@@ -4,7 +4,7 @@ Retrieve the software license list of Python packages installed with *pip*.
 
 ## About
 
-This package is a fork of the great [pip-licenses](https://github.com/raimon49/pip-licenses) tool, which provides a CLI with similiar functionality. For now, *pip-licenses* itself mostly focuses on the CLI part; while library-based access is possible, some interesting methods for further reuse are nested and therefore hidden inside the corresponding API.
+This package is a fork of the great [pip-licenses](https://github.com/raimon49/pip-licenses) tool, which provides a CLI with similar functionality. For now, *pip-licenses* itself mostly focuses on the CLI part; while library-based access is possible, some interesting methods for further reuse are nested and therefore hidden inside the corresponding API.
 
 While there have been some attempts to provide similar features in the upstream repository, they are not available inside the official package at the moment, while I needed a short-term solution. Examples:
 

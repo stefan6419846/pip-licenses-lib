@@ -40,7 +40,11 @@ setuptools.setup(
             'pypdf',
             # Spelling
             'codespell',
-        ]
+        ],
+        'docs': [
+            'sphinx',
+            'furo',
+        ],
     },
     classifiers=[
         'Development Status :: 4 - Beta',

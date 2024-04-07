@@ -1,29 +1,28 @@
-"""
-pip-licenses-lib
+# pip-licenses-lib
+#
+# MIT License
+#
+# Copyright (c) 2018 raimon
+# Copyright (c) 2023 stefan6419846
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-MIT License
-
-Copyright (c) 2018 raimon
-Copyright (c) 2023 stefan6419846
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 # TODO: Enable and change type hints accordingly after dropping support for Python < 3.8.
 # from __future__ import annotations
 
@@ -99,8 +98,8 @@ def normalize_package_name(package_name: str) -> str:
 
     See here: https://peps.python.org/pep-0503/#normalized-names
 
-    :param package_name: Package name it is extracted from the package metadata
-                         or specified in the CLI.
+    :param package_name: Package name as it is extracted from the package metadata
+                         or specified as parameter somewhere.
     :return: Normalized package name.
     """
     return PATTERN_PACKAGE_NAME_DELIMITER.sub("-", package_name).lower()
@@ -152,7 +151,7 @@ def get_package_included_files(
     package_files = package.files or ()
     pattern = re.compile(file_names_regex)
     matched_relative_paths = filter(
-        lambda file: pattern.match(file.name), package_files
+        lambda entry: pattern.match(entry.name), package_files
     )
     for relative_path in matched_relative_paths:
         absolute_path = Path(package.locate_file(relative_path))
@@ -315,6 +314,21 @@ class FromArg(NoValueEnum):
     """
 
     META = auto()
+    """
+    Retrieve from metadata field only.
+    """
+
     CLASSIFIER = auto()
+    """
+    Retrieve from classifiers only.
+    """
+
     MIXED = auto()
+    """
+    Prefer classifiers over the metadata field.
+    """
+
     ALL = auto()
+    """
+    Retrieve from all. Currently not implemented.
+    """

@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pip-licenses-lib"
+description = "Retrieve the software license list of Python packages installed with pip."
+dynamic = ["version"]
+license = {text = "MIT"}
+readme = {file = "README.md", content-type = "text/markdown" }
+authors = [
+    {name = "raimon49"},
+    {name = "stefan6419846 (library version)"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+keywords = [
+    "open source",
+    "license",
+    "package",
+    "dependency",
+    "licensing"
+]
+requires-python = ">=3.6, <4"
+dependencies = [
+    "importlib_metadata; python_version < '3.8'"
+]
+
+[project.urls]
+Homepage = "https://github.com/stefan6419846/pip-licenses-lib"
+Documentation = "https://pip-licenses-lib.readthedocs.io"
+Repository = "https://github.com/stefan6419846/pip-licenses-lib"
+Issues = "https://github.com/stefan6419846/pip-licenses-lib/issues"
+Changelog = "https://github.com/stefan6419846/pip-licenses-lib/blob/master/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    # Linting
+    "flake8",
+    "flake8-bugbear",
+    "pep8-naming",
+    "mypy",
+    "types-requests",
+    # Test code
+    "requests",
+    "pypdf",
+    # Spelling
+    "codespell",
+]
+docs = [
+    "sphinx",
+    "furo",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "piplicenses_lib.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["piplicenses_lib", "piplicenses_lib.*"]
+namespaces = false

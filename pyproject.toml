@@ -7,7 +7,7 @@ name = "pip-licenses-lib"
 description = "Retrieve the software license list of Python packages installed with pip."
 dynamic = ["version"]
 license = {text = "MIT"}
-readme = {file = "README.md", content-type = "text/markdown" }
+readme = {file = "README.md", content-type = "text/markdown"}
 authors = [
     {name = "raimon49"},
     {name = "stefan6419846 (library version)"},
@@ -32,7 +32,7 @@ keywords = [
 ]
 requires-python = ">=3.6, <4"
 dependencies = [
-    "importlib_metadata; python_version < '3.8'"
+    "importlib_metadata; python_version < '3.8'",
 ]
 
 [project.urls]
@@ -69,5 +69,8 @@ version = {attr = "piplicenses_lib.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["piplicenses_lib", "piplicenses_lib.*"]
+include = [
+    "piplicenses_lib",
+    "piplicenses_lib.*"
+]
 namespaces = false

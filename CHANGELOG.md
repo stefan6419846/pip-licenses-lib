@@ -1,5 +1,8 @@
 # Development version
 
+* Migrate from `setup.py` to `pyproject.toml`.
+* Add Read the Docs configuration.
+
 # Version 0.2.1 - 2023-11-09
 
 * Avoid bundling the tests within wheels.

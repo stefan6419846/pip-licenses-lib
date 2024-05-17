@@ -157,7 +157,7 @@ def get_package_included_files(
         lambda entry: pattern.match(entry.name), package_files
     )
     for relative_path in matched_relative_paths:
-        absolute_path = Path(package.locate_file(relative_path))
+        absolute_path = Path(package.locate_file(relative_path))  # type: ignore[arg-type,unused-ignore]  # TODO: Unused only required for Python <= 3.9.
         if not absolute_path.is_file():
             continue
         included_file = str(absolute_path)

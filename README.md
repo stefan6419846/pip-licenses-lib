@@ -17,12 +17,13 @@ As parsing the license data of packages as provided by the maintainers is at lea
 
 Changes compared to original version:
 
+  * Use `dataclasses.dataclass` instead of a dictionary for each package information result.
   * Enable support for Python < 3.8 by using the `importlib_metadata` backport and dropping support for the new annotations behaviour for now.
   * Remove all output/rendering functionality.
   * Move all methods to the top level.
   * Always return all copyright and notice file matches.
   * Always return the system packages as well.
-  * Include the license names and distribution object inside the result dictionary.
+  * Include the license names and distribution object inside the results.
   * Do not use abbreviations for naming purposes.
   * Rewrite tests to use plain *unittest* functionality.
   * Add option to skip retrieving license and notice files for faster version-only checks.
@@ -39,7 +40,7 @@ Alternatively, you can use the package from source directly after installing the
 
 ## Usage
 
-The main entry point is `piplicenses_lib.get_packages()`, which will yield a list of package data dictionaries.
+The main entry point is `piplicenses_lib.get_packages()`, which will yield a list of package data objects.
 
 ## License
 

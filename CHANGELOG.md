@@ -1,5 +1,9 @@
 # Development version
 
+* Migrate from dictionary-based structure to `dataclasses.dataclass`.
+  * Please note that this is a breaking change which should ease future maintainability.
+  * Additionally, the corresponding attributes have been renamed to better match PEP8
+    and make it clearer in some cases what these values actually refer to. 
 * Migrate from `setup.py` to `pyproject.toml`.
 * Add Read the Docs configuration.
 

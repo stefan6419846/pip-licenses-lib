@@ -30,6 +30,7 @@ import os
 import re
 import subprocess
 import sys
+from dataclasses import dataclass, field as dataclass_field
 from email.message import Message
 from enum import Enum, auto
 try:
@@ -37,10 +38,10 @@ try:
     from importlib.metadata import Distribution
 except ImportError:
     # Python < 3.8
-    import importlib_metadata  # type: ignore[import-not-found,no-redef]
-    from importlib_metadata import Distribution  # type: ignore[no-redef]
+    import importlib_metadata  # type: ignore[import-not-found,no-redef,unused-ignore]
+    from importlib_metadata import Distribution  # type: ignore[no-redef,assignment,unused-ignore]
 from pathlib import Path
-from typing import Callable, cast, Dict, Generator, Iterator, List, Optional, Set, Tuple, Union
+from typing import Callable, Dict, Generator, Iterator, List, Optional, Set, Tuple, Union
 
 
 __pkgname__ = "pip-licenses-lib"
@@ -107,7 +108,7 @@ def normalize_package_name(package_name: str) -> str:
 
 # Mapping of how to retrieve the different metadata fields.
 METADATA_KEYS: Dict[str, List[Callable[[Message], Optional[str]]]] = {
-    "home-page": [extract_homepage],
+    "homepage": [extract_homepage],
     "author": [
         lambda metadata: metadata.get("author"),
         lambda metadata: metadata.get("author-email"),
@@ -120,8 +121,10 @@ METADATA_KEYS: Dict[str, List[Callable[[Message], Optional[str]]]] = {
     "summary": [lambda metadata: metadata.get("summary")],
 }
 
-# Identifier for unknown licenses.
 LICENSE_UNKNOWN = "UNKNOWN"
+"""
+Identifier for unknown license data.
+"""
 
 
 def read_file(
@@ -162,15 +165,126 @@ def get_package_included_files(
         yield included_file, included_text
 
 
+@dataclass
+class PackageInfo:
+    """
+    Hold the information on one specific package.
+    """
+
+    name: str
+    """
+    The package name.
+    """
+
+    version: str
+    """
+    The package version.
+    """
+
+    distribution: Distribution
+    """
+    The corresponding distribution object.
+    """
+
+    homepage: str = LICENSE_UNKNOWN
+    """
+    The corresponding homepage.
+    """
+
+    author: str = LICENSE_UNKNOWN
+    """
+    The package author.
+    """
+
+    maintainer: str = LICENSE_UNKNOWN
+    """
+    The package maintainer.
+    """
+
+    license: str = LICENSE_UNKNOWN
+    """
+    The declared license.
+    """
+
+    summary: str = LICENSE_UNKNOWN
+    """
+    The package summary.
+    """
+
+    licenses: List[Tuple[str, str]] = dataclass_field(default_factory=list)
+    """
+    List of license files and their contents.
+    """
+
+    license_classifiers: List[str] = dataclass_field(default_factory=list)
+    """
+    List of declared license classifiers.
+    """
+
+    license_names: Set[str] = dataclass_field(default_factory=set)
+    """
+    List of declared license names.
+    """
+
+    notices: List[Tuple[str, str]] = dataclass_field(default_factory=list)
+    """
+    List of notice files and their contents.
+    """
+
+    requirements: Set[str] = dataclass_field(default_factory=set)
+    """
+    Collection of all declared (direct) requirements.
+    """
+
+    @property
+    def name_version(self) -> str:
+        """
+        String consisting of package name and version.
+        """
+        return f"{self.name} {self.version}"
+
+    @property
+    def license_files(self) -> Iterator[str]:
+        """
+        List of license file paths.
+        """
+        for entry in self.licenses:
+            yield entry[0]
+
+    @property
+    def license_texts(self) -> Iterator[str]:
+        """
+        List of license texts.
+        """
+        for entry in self.licenses:
+            yield entry[1]
+
+    @property
+    def notice_files(self) -> Iterator[str]:
+        """
+        List of notice file paths.
+        """
+        for entry in self.notices:
+            yield entry[0]
+
+    @property
+    def notice_texts(self) -> Iterator[str]:
+        """
+        List of notice texts.
+        """
+        for entry in self.notices:
+            yield entry[1]
+
+
 def get_package_info(
         package: Distribution, include_files: bool = True,
-) -> Dict[str, Union[str, List[str], Set[str], Distribution]]:
+) -> PackageInfo:
     """
     Retrieve the relevant information for the given package.
 
     :param package: The package to work on.
     :param include_files: Retrieve license, copying and notice files.
-    :return: The dictionary with the retrieved metadata.
+    :return: The retrieved metadata/package information.
     """
     if include_files:
         license_files = list(get_package_included_files(
@@ -180,18 +294,15 @@ def get_package_info(
     else:
         license_files = []
         notice_files = []
-    requirements = set(package.requires or [])
-    package_info: Dict[str, Union[str, List[str], Set[str], Distribution]] = {
-        "name": package.metadata["name"],
-        "version": package.version,
-        "namever": f"{package.metadata['name']} {package.version}",
-        "licensefile": [entry[0] for entry in license_files],
-        "licensetext": [entry[1] for entry in license_files],
-        "noticefile": [entry[0] for entry in notice_files],
-        "noticetext": [entry[1] for entry in notice_files],
-        "requires": requirements,
-        "distribution": package,
-    }
+
+    package_info = PackageInfo(
+        name=package.metadata["name"],
+        version=package.version,
+        licenses=license_files,
+        notices=notice_files,
+        requirements=set(package.requires or []),
+        distribution=package,
+    )
     metadata = package.metadata
     for field_name, field_selector_functions in METADATA_KEYS.items():
         value = None
@@ -201,10 +312,10 @@ def get_package_info(
             value = field_selector_function(metadata)  # type: ignore[arg-type,unused-ignore]  # noqa: E501  # FIXME: Remove `unused-ignore` when dropping Python <= 3.9.
             if value:
                 break
-        package_info[field_name] = value or LICENSE_UNKNOWN
+        setattr(package_info, field_name, value or LICENSE_UNKNOWN)
 
     classifiers: List[str] = metadata.get_all("classifier", [])
-    package_info["license_classifier"] = find_license_from_classifier(
+    package_info.license_classifiers = find_license_from_classifier(
         classifiers
     )
 
@@ -229,7 +340,7 @@ def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # ty
 
 def get_packages(
         from_source: 'FromArg', python_path: Optional[Union[str, Path]] = None, include_files: bool = True,
-) -> Iterator[Dict[str, Union[str, List[str], Set[str], Distribution]]]:
+) -> Iterator[PackageInfo]:
     """
     Get the packages for the given Python interpreter.
 
@@ -240,7 +351,7 @@ def get_packages(
     :param python_path: The Python executable to use. If unset, uses the
                         current interpreter.
     :param include_files: Retrieve license, copying and notice files.
-    :return: The corresponding package dictionaries.
+    :return: The corresponding package information.
     """
     search_paths = sys.path if not python_path else get_python_sys_path(python_path)
     packages = importlib_metadata.distributions(path=search_paths)
@@ -250,10 +361,10 @@ def get_packages(
 
         license_names = select_license_by_source(
             from_source,
-            cast(List[str], package_info["license_classifier"]),
-            cast(str, package_info["license"]),
+            package_info.license_classifiers,
+            package_info.license,
         )
-        package_info["license_names"] = license_names
+        package_info.license_names = license_names
 
         yield package_info
 

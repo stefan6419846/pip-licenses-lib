@@ -28,6 +28,7 @@ Differences to pip-licenses
 
 Changes compared to original version:
 
+* Use ``dataclasses.dataclass`` instead of a dictionary for each package information result.
 * Enable support for Python < 3.8 by using the ``importlib_metadata`` backport and dropping support for the new annotations behaviour for now.
 * Remove all output/rendering functionality.
 * Move all methods to the top level.
@@ -54,7 +55,7 @@ Alternatively, you can use the package from source directly after installing the
 Usage
 -----
 
-The main entry point is ``piplicenses_lib.get_packages()``, which will yield a list of package data dictionaries. For more details, see the :doc:`api` documentation itself.
+The main entry point is ``piplicenses_lib.get_packages()``, which will yield a list of package data objects. For more details, see the :doc:`api` documentation itself.
 
 
 License

@@ -78,3 +78,8 @@ namespaces = false
 [tool.mypy]
 strict = true
 files = "piplicenses_lib,tests"
+
+[tool.codespell]
+skip = './.git/*,./.mypy*,./venv*,./docs/_build/*,./docs/importlib.metadata-inv.txt,'
+check-hidden = true
+ignore-words-list = 'assertIn,'

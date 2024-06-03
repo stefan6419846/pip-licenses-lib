@@ -35,4 +35,4 @@ jobs:
           mypy --strict piplicenses_lib/ tests/
       - name: codespell
         run:
-          codespell --check-hidden --skip "./.git/*,./.mypy*"
+          codespell

@@ -1,5 +1,7 @@
 # Development version
 
+# Version 0.3.0 - 2024-06-03
+
 * Migrate from dictionary-based structure to `dataclasses.dataclass`.
   * Please note that this is a breaking change which should ease future maintainability.
   * Additionally, the corresponding attributes have been renamed to better match PEP8

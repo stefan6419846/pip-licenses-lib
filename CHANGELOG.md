@@ -1,5 +1,7 @@
 # Development version
 
+# Version 0.4.0 - 2024-08-13
+
 * Add option to normalize package names, defaulting to `True`.
 
 # Version 0.3.0 - 2024-06-03

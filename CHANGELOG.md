@@ -1,5 +1,7 @@
 # Development version
 
+* Add option to normalize package names, defaulting to `True`.
+
 # Version 0.3.0 - 2024-06-03
 
 * Migrate from dictionary-based structure to `dataclasses.dataclass`.

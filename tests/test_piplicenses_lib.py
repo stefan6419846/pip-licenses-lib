@@ -288,6 +288,18 @@ class GetPackageInfoTestCase(TestCase):
                 self.assertEqual(["BSD License"], package_info.license_classifiers)
                 self.assertIn('black ; extra == "dev"', package_info.requirements)
 
+    def test_get_package_info__normalize_name(self) -> None:
+        distribution = DummyDistribution()
+        for source, target in [
+                ("pypdf", "pypdf"),
+                ("WebOb", "webob"),
+                ("lxml_html_clean", "lxml-html-clean")
+        ]:
+            with self.subTest(source=source):
+                distribution.metadata["name"] = source
+                self.assertEqual(source, get_package_info(distribution, normalize_name=False).name)  # type: ignore[arg-type]
+                self.assertEqual(target, get_package_info(distribution, normalize_name=True).name)  # type: ignore[arg-type]
+
     def test_get_package_info__author_field(self) -> None:
         distribution = DummyDistribution()
         distribution.metadata["author"] = "Max Mustermann"

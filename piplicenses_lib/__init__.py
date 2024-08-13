@@ -277,13 +277,14 @@ class PackageInfo:
 
 
 def get_package_info(
-        package: Distribution, include_files: bool = True,
+        package: Distribution, include_files: bool = True, normalize_name: bool = True,
 ) -> PackageInfo:
     """
     Retrieve the relevant information for the given package.
 
     :param package: The package to work on.
     :param include_files: Retrieve license, copying and notice files.
+    :param normalize_name: Normalize the package name.
     :return: The retrieved metadata/package information.
     """
     if include_files:
@@ -295,8 +296,11 @@ def get_package_info(
         license_files = []
         notice_files = []
 
+    name = package.metadata["name"]
+    if normalize_name:
+        name = normalize_package_name(name)
     package_info = PackageInfo(
-        name=package.metadata["name"],
+        name=name,
         version=package.version,
         licenses=license_files,
         notices=notice_files,
@@ -340,6 +344,7 @@ def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # ty
 
 def get_packages(
         from_source: 'FromArg', python_path: Optional[Union[str, Path]] = None, include_files: bool = True,
+        normalize_names: bool = True,
 ) -> Iterator[PackageInfo]:
     """
     Get the packages for the given Python interpreter.
@@ -351,13 +356,14 @@ def get_packages(
     :param python_path: The Python executable to use. If unset, uses the
                         current interpreter.
     :param include_files: Retrieve license, copying and notice files.
+    :param normalize_names: Normalize the package names.
     :return: The corresponding package information.
     """
     search_paths = sys.path if not python_path else get_python_sys_path(python_path)
     packages = importlib_metadata.distributions(path=search_paths)
 
     for package in packages:
-        package_info = get_package_info(package=package, include_files=include_files)
+        package_info = get_package_info(package=package, include_files=include_files, normalize_name=normalize_names)
 
         license_names = select_license_by_source(
             from_source,

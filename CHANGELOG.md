@@ -1,5 +1,7 @@
 # Development version
 
+* Fix detection of lowercase license and notice files.
+
 # Version 0.4.0 - 2024-08-13
 
 * Add option to normalize package names, defaulting to `True`.

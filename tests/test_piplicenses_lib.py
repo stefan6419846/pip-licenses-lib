@@ -24,12 +24,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import shutil
 # TODO: Enable and change type hints accordingly after dropping support for Python < 3.8.
 # from __future__ import annotations
 
 import subprocess
 import sys
 from contextlib import contextmanager
+from importlib.metadata import PathDistribution
 from operator import attrgetter
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
@@ -38,6 +40,8 @@ from typing import cast, Any, Generator, List, Optional, Union
 from unittest import TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
+
+import requests
 
 from piplicenses_lib import (  # type: ignore[attr-defined]
     Distribution,
@@ -192,6 +196,15 @@ class GetPackageIncludedFilesTestCase(TestCase):
             paths
         )
 
+    def test_get_package_included_file__casing(self) -> None:
+        results = list(get_package_included_files(package=self.pypdf, file_names_regex=r"_.*\.PY"))
+        self.assertLessEqual(1, len(results), results)
+        paths = {result[0] for result in results}
+        self.assertIn(
+            str(self.pypdf.locate_file("pypdf/_encryption.py")),
+            paths
+        )
+
 
 class DummyDistribution:
     class MyDict(CaseInsensitiveDict):  # type: ignore[type-arg]  # noqa: E501  # FIXME: Use `CaseInsensitiveDict[Any]` when dropping Python <= 3.8.
@@ -329,6 +342,22 @@ class GetPackageInfoTestCase(TestCase):
     def test_get_package_info__no_maintainer_field(self) -> None:
         distribution = DummyDistribution()
         self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution).maintainer)  # type: ignore[arg-type]
+
+    def test_get_package_info__file_casing(self) -> None:
+        with NamedTemporaryFile(suffix=".zip") as fd:
+            response = requests.get(url="https://files.pythonhosted.org/packages/c3/c2/fbc206db211c11ac85f2b440670ff6f43d44d7601f61b95628f56d271c21/WebOb-1.8.8-py2.py3-none-any.whl")  # noqa: E501
+            self.assertEqual(200, response.status_code, response)
+            fd.write(response.content)
+            fd.seek(0)
+            with TemporaryDirectory() as directory:
+                shutil.unpack_archive(filename=fd.name, extract_dir=directory)
+                webob = PathDistribution(Path(directory, "WebOb-1.8.8.dist-info"))
+                package_info = get_package_info(webob)
+                license_files = list(package_info.license_files)
+                self.assertEqual(
+                    [str(Path(directory) / "WebOb-1.8.8.dist-info" / "license.txt")],
+                    license_files,
+                )
 
 
 class GetPackagesTestCase(TestCase):

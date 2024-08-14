@@ -152,7 +152,7 @@ def get_package_included_files(
              corresponding file content.
     """
     package_files = package.files or ()
-    pattern = re.compile(file_names_regex)
+    pattern = re.compile(file_names_regex, flags=re.IGNORECASE)
     matched_relative_paths = filter(
         lambda entry: pattern.match(entry.name), package_files
     )

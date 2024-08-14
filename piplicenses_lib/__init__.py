@@ -45,7 +45,7 @@ from typing import Callable, Dict, Generator, Iterator, List, Optional, Set, Tup
 
 
 __pkgname__ = "pip-licenses-lib"
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __author__ = "raimon, stefan6419846"
 __license__ = "MIT"
 __summary__ = (

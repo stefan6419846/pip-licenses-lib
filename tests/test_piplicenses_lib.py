@@ -24,10 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import shutil
 # TODO: Enable and change type hints accordingly after dropping support for Python < 3.8.
 # from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 from contextlib import contextmanager
@@ -41,8 +41,8 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
 
-import requests
 
+import requests
 from piplicenses_lib import (  # type: ignore[attr-defined]
     Distribution,
     extract_homepage,

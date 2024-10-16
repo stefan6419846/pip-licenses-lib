@@ -30,9 +30,8 @@ keywords = [
     "dependency",
     "licensing"
 ]
-requires-python = ">=3.6, <4"
+requires-python = ">=3.9, <4"
 dependencies = [
-    "importlib_metadata; python_version < '3.8'",
 ]
 
 [project.urls]

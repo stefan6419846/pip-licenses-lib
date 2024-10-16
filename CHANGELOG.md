@@ -1,5 +1,7 @@
 # Development version
 
+* Drop support for Python < 3.9.
+
 # Version 0.4.1 - 2024-08-14
 
 * Fix detection of lowercase license and notice files.

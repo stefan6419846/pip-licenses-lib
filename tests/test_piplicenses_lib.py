@@ -24,8 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-# TODO: Enable and change type hints accordingly after dropping support for Python < 3.8.
-# from __future__ import annotations
+from __future__ import annotations
 
 import shutil
 import subprocess
@@ -36,7 +35,7 @@ from operator import attrgetter
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
-from typing import cast, Any, Generator, List, Optional, Union
+from typing import cast, Any, Generator, Union
 from unittest import TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
@@ -70,7 +69,7 @@ class EnvBuilder(_EnvBuilder):
 
 
 @contextmanager
-def create_temporary_venv(additional_packages: Optional[List[str]] = None) -> Generator[EnvBuilder, None, None]:
+def create_temporary_venv(additional_packages: list[str] | None = None) -> Generator[EnvBuilder, None, None]:
     with TemporaryDirectory() as environment_path:
         venv_builder = EnvBuilder(with_pip=True)
         venv_builder.create(environment_path)
@@ -158,7 +157,7 @@ class ReadFileTestCase(TestCase):
             fd.write("Test text\nabc\n")
             fd.seek(0)
             for path in [fd.name, Path(fd.name)]:
-                path = cast(Union[str, Path], path)
+                path = cast(Union[str, Path], path)  # TODO: Drop class when removing Python 3.9.
                 with self.subTest(path=path):
                     self.assertEqual("Test text\nabc\n", read_file(path))
 
@@ -207,8 +206,8 @@ class GetPackageIncludedFilesTestCase(TestCase):
 
 
 class DummyDistribution:
-    class MyDict(CaseInsensitiveDict):  # type: ignore[type-arg]  # noqa: E501  # FIXME: Use `CaseInsensitiveDict[Any]` when dropping Python <= 3.8.
-        def get_all(self, key: str, default: Optional[Any] = None) -> List[Any]:
+    class MyDict(CaseInsensitiveDict[Any]):
+        def get_all(self, key: str, default: Any | None = None) -> list[Any]:
             value = self.get(key, default=default)
             if not isinstance(value, list):
                 raise ValueError("get_all called for non-list value")
@@ -216,9 +215,9 @@ class DummyDistribution:
 
     def __init__(self, name: str = "dummy", version: str = "42"):
         self.metadata = self.MyDict(name=name)
-        self.files: List[Any] = []
+        self.files: list[Any] = []
         self.version = version
-        self.requires: List[str] = []
+        self.requires: list[str] = []
 
 
 class PackageInfoTestCase(TestCase):
@@ -261,10 +260,10 @@ class PackageInfoTestCase(TestCase):
 
 
 class GetPackageInfoTestCase(TestCase):
-    def assertStartsWith(self, expected: str, actual: str, message: Optional[str] = None) -> None:  # noqa: N802
+    def assertStartsWith(self, expected: str, actual: str, message: str | None = None) -> None:  # noqa: N802
         self.assertEqual(expected, actual[:len(expected)], message)
 
-    def assertEndsWith(self, expected: str, actual: str, message: Optional[str] = None) -> None:  # noqa: N802
+    def assertEndsWith(self, expected: str, actual: str, message: str | None = None) -> None:  # noqa: N802
         self.assertEqual(expected, actual[-len(expected):], message)
 
     def test_get_package_info(self) -> None:
@@ -456,7 +455,7 @@ class FindLicenseFromClassifier(TestCase):
         )
 
     def test_find_license_from_classifier__no_classifiers(self) -> None:
-        classifiers: List[str] = []
+        classifiers: list[str] = []
         self.assertEqual([], find_license_from_classifier(classifiers))
 
 

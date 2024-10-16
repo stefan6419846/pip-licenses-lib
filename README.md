@@ -19,6 +19,7 @@ Changes compared to original version:
 
   * Use `dataclasses.dataclass` instead of a dictionary for each package information result.
   * Enable support for Python < 3.8 by using the `importlib_metadata` backport and dropping support for the new annotations behaviour for now.
+    * Please use `piplicenses-lib<=0.4.1` if you need to support Python < 3.9. 
   * Remove all output/rendering functionality.
   * Move all methods to the top level.
   * Always return all copyright and notice file matches.

@@ -23,8 +23,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# TODO: Enable and change type hints accordingly after dropping support for Python < 3.8.
-# from __future__ import annotations
+from __future__ import annotations
 
 import os
 import re
@@ -33,15 +32,10 @@ import sys
 from dataclasses import dataclass, field as dataclass_field
 from email.message import Message
 from enum import Enum, auto
-try:
-    from importlib import metadata as importlib_metadata
-    from importlib.metadata import Distribution
-except ImportError:
-    # Python < 3.8
-    import importlib_metadata  # type: ignore[import-not-found,no-redef,unused-ignore]
-    from importlib_metadata import Distribution  # type: ignore[no-redef,assignment,unused-ignore]
+from importlib import metadata as importlib_metadata
+from importlib.metadata import Distribution
 from pathlib import Path
-from typing import Callable, Dict, Generator, Iterator, List, Optional, Set, Tuple, Union
+from typing import Callable, Generator, Iterator
 
 
 __pkgname__ = "pip-licenses-lib"
@@ -54,7 +48,7 @@ __summary__ = (
 __url__ = "https://github.com/stefan6419846/pip-licenses-lib"
 
 
-def extract_homepage(metadata: Message) -> Optional[str]:
+def extract_homepage(metadata: Message) -> str | None:
     """
     Extracts the homepage attribute from the package metadata.
 
@@ -66,11 +60,11 @@ def extract_homepage(metadata: Message) -> Optional[str]:
     :param metadata: The package metadata to extract the homepage from.
     :return: The home page if applicable, None otherwise.
     """
-    homepage: Optional[str] = metadata.get("home-page", None)
+    homepage: str | None = metadata.get("home-page", None)
     if homepage is not None:
         return homepage
 
-    candidates: Dict[str, str] = {}
+    candidates: dict[str, str] = {}
 
     for entry in metadata.get_all("Project-URL", []):
         key, value = entry.split(",", 1)
@@ -107,7 +101,7 @@ def normalize_package_name(package_name: str) -> str:
 
 
 # Mapping of how to retrieve the different metadata fields.
-METADATA_KEYS: Dict[str, List[Callable[[Message], Optional[str]]]] = {
+METADATA_KEYS: dict[str, list[Callable[[Message], str | None]]] = {
     "homepage": [extract_homepage],
     "author": [
         lambda metadata: metadata.get("author"),
@@ -128,7 +122,7 @@ Identifier for unknown license data.
 
 
 def read_file(
-        path: Union[str, Path]
+        path: str | Path
 ) -> str:
     """
     Read the given file.
@@ -141,7 +135,7 @@ def read_file(
 
 def get_package_included_files(
         package: Distribution, file_names_regex: str
-) -> Generator[Tuple[str, str], None, None]:
+) -> Generator[tuple[str, str], None, None]:
     """
     Attempt to find the package's included files on disk and return the
     tuple (included_file_path, included_file_contents).
@@ -211,27 +205,27 @@ class PackageInfo:
     The package summary.
     """
 
-    licenses: List[Tuple[str, str]] = dataclass_field(default_factory=list)
+    licenses: list[tuple[str, str]] = dataclass_field(default_factory=list)
     """
     List of license files and their contents.
     """
 
-    license_classifiers: List[str] = dataclass_field(default_factory=list)
+    license_classifiers: list[str] = dataclass_field(default_factory=list)
     """
     List of declared license classifiers.
     """
 
-    license_names: Set[str] = dataclass_field(default_factory=set)
+    license_names: set[str] = dataclass_field(default_factory=set)
     """
     List of declared license names.
     """
 
-    notices: List[Tuple[str, str]] = dataclass_field(default_factory=list)
+    notices: list[tuple[str, str]] = dataclass_field(default_factory=list)
     """
     List of notice files and their contents.
     """
 
-    requirements: Set[str] = dataclass_field(default_factory=set)
+    requirements: set[str] = dataclass_field(default_factory=set)
     """
     Collection of all declared (direct) requirements.
     """
@@ -318,7 +312,7 @@ def get_package_info(
                 break
         setattr(package_info, field_name, value or LICENSE_UNKNOWN)
 
-    classifiers: List[str] = metadata.get_all("classifier", [])
+    classifiers: list[str] = metadata.get_all("classifier", [])
     package_info.license_classifiers = find_license_from_classifier(
         classifiers
     )
@@ -326,7 +320,7 @@ def get_package_info(
     return package_info
 
 
-def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # type: ignore[type-arg]  # noqa: E501  # FIXME: Use `os.PathLike[str]` when dropping Python <= 3.7.
+def get_python_sys_path(executable: os.PathLike[str] | str) -> list[str]:
     """
     Get the value of `sys.path` for the given Python executable.
 
@@ -334,16 +328,18 @@ def get_python_sys_path(executable: Union[str, os.PathLike]) -> List[str]:  # ty
     :return: The corresponding `sys.path` entries.
     """
     script = "import sys; print(' '.join(filter(bool, sys.path)))"
-    output: "subprocess.CompletedProcess[bytes]" = subprocess.run(  # type: ignore[call-overload]  # FIXME: Remove after dropping Python <= 3.7.
+    output: subprocess.CompletedProcess[bytes] = subprocess.run(
         [executable, "-c", script],
-        **dict(capture_output=True) if sys.version_info >= (3, 7) else dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE),  # type: ignore[dict-item]  # noqa: E501
+        capture_output=True,
         env={**os.environ, "PYTHONPATH": "", "VIRTUAL_ENV": ""},
     )
     return output.stdout.decode().strip().split()
 
 
 def get_packages(
-        from_source: 'FromArg', python_path: Optional[Union[str, Path]] = None, include_files: bool = True,
+        from_source: FromArg,
+        python_path: os.PathLike[str] | str | None = None,
+        include_files: bool = True,
         normalize_names: bool = True,
 ) -> Iterator[PackageInfo]:
     """
@@ -359,7 +355,10 @@ def get_packages(
     :param normalize_names: Normalize the package names.
     :return: The corresponding package information.
     """
-    search_paths = sys.path if not python_path else get_python_sys_path(python_path)
+    if python_path is not None:
+        search_paths = get_python_sys_path(python_path)
+    else:
+        search_paths = sys.path
     packages = importlib_metadata.distributions(path=search_paths)
 
     for package in packages:
@@ -375,7 +374,7 @@ def get_packages(
         yield package_info
 
 
-def find_license_from_classifier(classifiers: List[str]) -> List[str]:
+def find_license_from_classifier(classifiers: list[str]) -> list[str]:
     """
     Search inside the given classifiers for licenses.
 
@@ -394,8 +393,8 @@ def find_license_from_classifier(classifiers: List[str]) -> List[str]:
 
 
 def select_license_by_source(
-        from_source: 'FromArg', license_classifier: List[str], license_meta: str
-) -> Set[str]:
+        from_source: FromArg, license_classifier: list[str], license_meta: str
+) -> set[str]:
     """
     Decide which license source to use.
 

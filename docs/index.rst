@@ -29,7 +29,6 @@ Differences to pip-licenses
 Changes compared to original version:
 
 * Use ``dataclasses.dataclass`` instead of a dictionary for each package information result.
-* Enable support for Python < 3.8 by using the ``importlib_metadata`` backport and dropping support for the new annotations behaviour for now.
 * Remove all output/rendering functionality.
 * Move all methods to the top level.
 * Always return all copyright and notice file matches.

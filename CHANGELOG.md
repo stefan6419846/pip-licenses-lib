@@ -1,6 +1,7 @@
 # Development version
 
 * Drop support for Python < 3.9.
+* Add support for `License-Expression` field (PEP 639).
 
 # Version 0.4.1 - 2024-08-14
 

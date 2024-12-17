@@ -342,6 +342,26 @@ class GetPackageInfoTestCase(TestCase):
         distribution = DummyDistribution()
         self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution).maintainer)  # type: ignore[arg-type]
 
+    def test_get_package_info__license_field(self) -> None:
+        distribution = DummyDistribution()
+        distribution.metadata["license"] = "Some license"
+        self.assertEqual("Some license", get_package_info(distribution).license)  # type: ignore[arg-type]
+
+    def test_get_package_info__license_expression_field(self) -> None:
+        distribution = DummyDistribution()
+        distribution.metadata["license"] = "Apache-2.0 OR MIT"
+        self.assertEqual("Apache-2.0 OR MIT", get_package_info(distribution).license)  # type: ignore[arg-type]
+
+    def test_get_package_info__license_and_license_expression_field(self) -> None:
+        distribution = DummyDistribution()
+        distribution.metadata["license"] = "Some license"
+        distribution.metadata["license-expression"] = "Apache-2.0 OR CC0-1.0"
+        self.assertEqual("Apache-2.0 OR CC0-1.0", get_package_info(distribution).license)  # type: ignore[arg-type]
+
+    def test_get_package_info__no_license_field(self) -> None:
+        distribution = DummyDistribution()
+        self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution).license)  # type: ignore[arg-type]
+
     def test_get_package_info__file_casing(self) -> None:
         with NamedTemporaryFile(suffix=".zip") as fd:
             response = requests.get(url="https://files.pythonhosted.org/packages/c3/c2/fbc206db211c11ac85f2b440670ff6f43d44d7601f61b95628f56d271c21/WebOb-1.8.8-py2.py3-none-any.whl")  # noqa: E501
@@ -357,6 +377,18 @@ class GetPackageInfoTestCase(TestCase):
                     [str(Path(directory) / "WebOb-1.8.8.dist-info" / "license.txt")],
                     license_files,
                 )
+
+    def test_get_package_info__license_expression_field_from_real_package(self) -> None:
+        with NamedTemporaryFile(suffix=".zip") as fd:
+            response = requests.get(url="https://files.pythonhosted.org/packages/76/0f/d8a8152e720cbcad890e56ee98639ff489f1992869b4cf304c3fa24d4bcc/ftfy-6.3.0-py3-none-any.whl")  # noqa: E501
+            self.assertEqual(200, response.status_code, response)
+            fd.write(response.content)
+            fd.seek(0)
+            with TemporaryDirectory() as directory:
+                shutil.unpack_archive(filename=fd.name, extract_dir=directory)
+                webob = PathDistribution(Path(directory, "ftfy-6.3.0.dist-info"))
+                package_info = get_package_info(webob)
+                self.assertEqual('Apache-2.0', package_info.license)
 
 
 class GetPackagesTestCase(TestCase):

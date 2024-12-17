@@ -111,7 +111,15 @@ METADATA_KEYS: dict[str, list[Callable[[Message], str | None]]] = {
         lambda metadata: metadata.get("maintainer"),
         lambda metadata: metadata.get("maintainer-email"),
     ],
-    "license": [lambda metadata: metadata.get("license")],
+    "license": [
+        # From https://packaging.python.org/en/latest/specifications/core-metadata/#license:
+        #
+        # > As of Metadata 2.4, `License` and `License-Expression` are mutually exclusive. If both are specified,
+        # > tools which parse metadata will disregard `License` and PyPI will reject uploads. See
+        # > [PEP 639](https://peps.python.org/pep-0639/#deprecate-license-field).
+        lambda metadata: metadata.get("license-expression"),
+        lambda metadata: metadata.get("license"),
+    ],
     "summary": [lambda metadata: metadata.get("summary")],
 }
 

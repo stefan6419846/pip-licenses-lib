@@ -4,22 +4,28 @@ Retrieve the software license list of Python packages installed with *pip*.
 
 ## About
 
-This package is a fork of the great [pip-licenses](https://github.com/raimon49/pip-licenses) tool, which provides a CLI with similar functionality. For now, *pip-licenses* itself mostly focuses on the CLI part; while library-based access is possible, some interesting methods for further reuse are nested and therefore hidden inside the corresponding API.
+This package is a fork of the great [pip-licenses](https://github.com/raimon49/pip-licenses) tool, which provides a CLI with similar functionality.
+For now, *pip-licenses* itself mostly focuses on the CLI part; while library-based access is possible, some interesting methods for further reuse
+are nested and therefore hidden inside the corresponding API.
 
-While there have been some attempts to provide similar features in the upstream repository, they are not available inside the official package at the moment, while I needed a short-term solution. Examples:
+While there have been some attempts to provide similar features in the upstream repository, they are not available inside the official package at
+the moment, while I needed a short-term solution. Examples:
 
-* In May 2021, a package structure has been introduced by [#88](https://github.com/raimon49/pip-licenses/pull/88). In August 2023, this is still only available on a `dev-4.0.0` branch, while version 4.0.0 has been released in November 2022.
-* In October 2020, the PR [#78](https://github.com/raimon49/pip-licenses/pull/78) for handling multiple license files has been closed to maybe include it in the future, which has not yet happened.
+* In May 2021, a package structure has been introduced by [#88](https://github.com/raimon49/pip-licenses/pull/88). In August 2023, this is still only available on a `dev-4.0.0` branch, while 
+  version 4.0.0 has been released in November 2022.
+* In October 2020, the PR [#78](https://github.com/raimon49/pip-licenses/pull/78) for handling multiple license files has been closed to maybe
+  include it in the future, which has not yet happened.
 
-As parsing the license data of packages as provided by the maintainers is at least some first hint regarding the license status, I decided to create this fork with the required modifications and enhancements to suit my current needs.
+As parsing the license data of packages as provided by the maintainers is at least some first hint regarding the license status, I decided to
+create this fork with the required modifications and enhancements to suit my current needs.
 
 ## Differences to pip-licenses
 
 Changes compared to original version:
 
   * Use `dataclasses.dataclass` instead of a dictionary for each package information result.
-  * Enable support for Python < 3.8 by using the `importlib_metadata` backport and dropping support for the new annotations behaviour for now.
-    * Please use `piplicenses-lib<=0.4.1` if you need to support Python < 3.9. 
+  * Enable support for Python < 3.8 by using the `importlib_metadata` backport.
+    * This has been changed in the meantime. Please use `piplicenses-lib<=0.4.1` if you need to support Python < 3.9. 
   * Remove all output/rendering functionality.
   * Move all methods to the top level.
   * Always return all copyright and notice file matches.
@@ -49,4 +55,6 @@ This package is subject to the terms of the MIT license.
 
 ## Disclaimer
 
-All results are generated automatically from the data supplied by the corresponding package maintainers and provided on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. No generated content should be considered or used as legal advice. Consult an Attorney for any legal advice.
+All results are generated automatically from the data supplied by the corresponding package maintainers and provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. No generated content should be considered or used as legal advice.
+Consult an Attorney for any legal advice.

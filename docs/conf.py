@@ -37,5 +37,4 @@ html_static_path = ["_static"]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "importlib": ("https://importlib-metadata.readthedocs.io/en/latest/", "importlib.metadata-inv.txt"),
 }

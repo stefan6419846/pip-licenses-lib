@@ -39,7 +39,7 @@ from typing import Callable, Generator, Iterator
 
 
 __pkgname__ = "pip-licenses-lib"
-__version__ = "0.4.1"
+__version__ = "0.5.0"
 __author__ = "raimon, stefan6419846"
 __license__ = "MIT"
 __summary__ = (

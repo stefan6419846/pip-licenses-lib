@@ -24,16 +24,16 @@ create this fork with the required modifications and enhancements to suit my cur
 Changes compared to original version:
 
   * Use `dataclasses.dataclass` instead of a dictionary for each package information result.
-  * Enable support for Python < 3.8 by using the `importlib_metadata` backport.
-    * This has been changed in the meantime. Please use `piplicenses-lib<=0.4.1` if you need to support Python < 3.9. 
   * Remove all output/rendering functionality.
   * Move all methods to the top level.
   * Always return all copyright and notice file matches.
   * Always return the system packages as well.
   * Include the license names and distribution object inside the results.
+  * Add option to skip retrieving license and notice files for faster version-only checks.
+  * Enable support for Python < 3.8 by using the `importlib_metadata` backport.
+    * This has been changed in the meantime. Please use `piplicenses-lib<=0.4.1` if you need to support Python < 3.9. 
   * Do not use abbreviations for naming purposes.
   * Rewrite tests to use plain *unittest* functionality.
-  * Add option to skip retrieving license and notice files for faster version-only checks.
 
 ## Installation
 

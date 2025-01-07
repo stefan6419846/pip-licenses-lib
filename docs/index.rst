@@ -34,10 +34,9 @@ Changes compared to original version:
 * Always return all copyright and notice file matches.
 * Always return the system packages as well.
 * Include the license names and distribution object inside the result dictionary.
+* Add option to skip retrieving license and notice files for faster version-only checks.
 * Do not use abbreviations for naming purposes.
 * Rewrite tests to use plain *unittest* functionality.
-* Add option to skip retrieving license and notice files for faster version-only checks.
-
 
 Installation
 ------------

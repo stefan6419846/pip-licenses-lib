@@ -30,6 +30,7 @@ Changes compared to original version:
   * Always return the system packages as well.
   * Include the license names and distribution object inside the results.
   * Add option to skip retrieving license and notice files for faster version-only checks.
+  * Add option to normalize returned package names.
   * Enable support for Python < 3.8 by using the `importlib_metadata` backport.
     * This has been changed in the meantime. Please use `piplicenses-lib<=0.4.1` if you need to support Python < 3.9. 
   * Do not use abbreviations for naming purposes.

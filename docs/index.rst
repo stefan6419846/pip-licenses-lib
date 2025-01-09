@@ -35,6 +35,7 @@ Changes compared to original version:
 * Always return the system packages as well.
 * Include the license names and distribution object inside the result dictionary.
 * Add option to skip retrieving license and notice files for faster version-only checks.
+* Add option to normalize returned package names.
 * Do not use abbreviations for naming purposes.
 * Rewrite tests to use plain *unittest* functionality.
 

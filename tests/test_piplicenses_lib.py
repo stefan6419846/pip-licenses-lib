@@ -282,7 +282,7 @@ class GetPackageInfoTestCase(TestCase):
                 license_texts = list(package_info.license_texts)
                 if include_files:
                     self.assertEqual(1, len(license_files), license_files)
-                    self.assertEndsWith(".dist-info/LICENSE", license_files[0])
+                    self.assertEndsWith(".dist-info/licenses/LICENSE", license_files[0])
                     self.assertEqual(1, len(license_texts), license_texts)
                     self.assertStartsWith("Copyright (c) 2006-2008, Mathieu Fenniak\nSome contributions copyright (c) 2007, Ashish", license_texts[0])
                     self.assertEndsWith(", EVEN IF ADVISED OF THE\nPOSSIBILITY OF SUCH DAMAGE.\n", license_texts[0])
@@ -294,7 +294,7 @@ class GetPackageInfoTestCase(TestCase):
                 self.assertIs(distribution, package_info.distribution)
                 self.assertEqual("https://github.com/py-pdf/pypdf", package_info.homepage)
                 self.assertEqual("Mathieu Fenniak <biziqe@mathieu.fenniak.net>", package_info.author)
-                self.assertEqual("Martin Thoma <info@martin-thoma.de>", package_info.maintainer)
+                self.assertEqual("stefan6419846", package_info.maintainer)
                 self.assertEqual(LICENSE_UNKNOWN, package_info.license)
                 self.assertEqual("A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files", package_info.summary)
                 self.assertEqual(["BSD License"], package_info.license_classifiers)

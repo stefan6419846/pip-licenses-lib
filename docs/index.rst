@@ -3,6 +3,9 @@ Welcome to pip-licenses-lib's documentation!
 
 Retrieve the software license list of Python packages installed with `pip`.
 
+If you are looking for a CLI based upon this library which is compatible with *pip-licenses*,
+you might want to have a look at `pip-license-cli <https://github.com/stefan6419846/pip-licenses-cli>`_.
+
 GitHub: `pip-license-lib <https://github.com/stefan6419846/pip-licenses-lib>`_
 
 .. toctree::
@@ -33,9 +36,10 @@ Changes compared to original version:
 * Move all methods to the top level.
 * Always return all copyright and notice file matches.
 * Always return the system packages as well.
+* Add support for newer standards like PEP 639.
 * Include the license names and distribution object inside the result dictionary.
-* Add option to skip retrieving license and notice files for faster version-only checks.
-* Add option to normalize returned package names.
+* Add an option to skip retrieving license and notice files for faster version-only checks.
+* Add an option to normalize returned package names.
 * Do not use abbreviations for naming purposes.
 * Rewrite tests to use plain *unittest* functionality.
 

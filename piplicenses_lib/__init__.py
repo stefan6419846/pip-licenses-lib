@@ -143,7 +143,7 @@ def read_file(
 
 def get_package_included_files(
         package: Distribution, file_names_regex: str
-) -> Generator[tuple[str, str], None, None]:
+) -> Generator[tuple[str, str]]:
     """
     Attempt to find the package's included files on disk and return the
     tuple (included_file_path, included_file_contents).
@@ -367,6 +367,11 @@ def get_packages(
         search_paths = get_python_sys_path(python_path)
     else:
         search_paths = sys.path
+    # Remove duplicates keeping the order as intended.
+    # Example: In some environments, `lib64` links to `lib`, thus generating duplicates
+    # for the same path.
+    search_paths = list(dict.fromkeys(str(Path(path).resolve()) for path in search_paths))
+
     packages = importlib_metadata.distributions(path=search_paths)
 
     for package in packages:

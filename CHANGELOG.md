@@ -1,5 +1,8 @@
 # Development version
 
+* Avoid returning packages twice when `sys.path` includes directories which are
+  identical after resolving symlinks. 
+
 # Version 0.5.0 - 2025-01-07
 
 * Drop support for Python < 3.9.
@@ -16,9 +19,9 @@
 # Version 0.3.0 - 2024-06-03
 
 * Migrate from dictionary-based structure to `dataclasses.dataclass`.
-  * Please note that this is a breaking change which should ease future maintainability.
+  * Please note that this is a breaking change that should ease future maintainability.
   * Additionally, the corresponding attributes have been renamed to better match PEP8
-    and make it clearer in some cases what these values actually refer to. 
+    and clarify it in some cases what these values actually refer to. 
 * Migrate from `setup.py` to `pyproject.toml`.
 * Add Read the Docs configuration.
 

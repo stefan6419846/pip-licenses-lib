@@ -432,6 +432,22 @@ class GetPackagesTestCase(TestCase):
         else:
             self.assertSetEqual({"pip"}, package_names)
 
+    def test_get_packages__duplicate_path(self) -> None:
+        with create_temporary_venv() as venv:
+            venv_path = Path(venv.executable).parent.parent
+            self.assertEqual(
+                venv_path.joinpath("lib").resolve(),
+                venv_path.joinpath("lib64").resolve()
+            )
+            packages = get_packages(from_source=FromArg.MIXED, python_path=venv.executable)
+            package_names = sorted(map(attrgetter("name"), packages))
+
+        # `setuptools` is not being shipped by default anymore since Python 3.12.
+        if sys.version_info < (3, 12):
+            self.assertListEqual(["pip", "setuptools"], package_names)
+        else:
+            self.assertListEqual(["pip"], package_names)
+
 
 class FindLicenseFromClassifier(TestCase):
     def test_find_license_from_classifier__unrelated_classifiers_only(self) -> None:

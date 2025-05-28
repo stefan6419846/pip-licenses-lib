@@ -33,7 +33,6 @@ jobs:
       - name: mypy
         run:
           mypy --strict piplicenses_lib/ tests/
-        if: ${{ matrix.python != '3.14-dev' }}
       - name: codespell
         run:
           codespell

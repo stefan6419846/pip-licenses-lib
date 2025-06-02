@@ -32,6 +32,7 @@ keywords = [
 ]
 requires-python = ">=3.9, <4"
 dependencies = [
+    "license-expression >= 30.4.1"
 ]
 
 [project.urls]
@@ -76,6 +77,7 @@ namespaces = false
 
 [tool.mypy]
 strict = true
+mypy_path = [".", "stubs"]
 files = "piplicenses_lib,tests"
 
 [tool.codespell]

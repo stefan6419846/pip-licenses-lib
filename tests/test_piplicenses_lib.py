@@ -536,6 +536,33 @@ class SelectLicenseBySourceTestCase(TestCase):
             ),
         )
 
+    def test_parse_spdx_license_with_and_clause(self) -> None:
+        license_meta = "Apache-2.0 AND BSD-3-Clause"
+        self.assertEqual(
+            {
+                "Apache-2.0",
+                "BSD-3-Clause",
+            },
+            select_license_by_source(
+                FromArg.META,
+                license_classifier=[],
+                license_meta=license_meta,
+            ),
+        )
+
+    def test_parse_spdx_license_with_or_clause(self) -> None:
+        license_meta = "Apache-2.0 OR BSD-3-Clause"
+        self.assertEqual(
+            {
+                "Apache-2.0",
+                "BSD-3-Clause",
+            },
+            select_license_by_source(
+                FromArg.META,
+                license_classifier=[],
+                license_meta=license_meta,
+            ),
+        )
 
 class FromArgTestCase(TestCase):
     def test_repr(self) -> None:

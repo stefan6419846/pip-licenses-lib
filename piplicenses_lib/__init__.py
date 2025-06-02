@@ -29,7 +29,8 @@ import os
 import re
 import subprocess
 import sys
-from dataclasses import dataclass, field as dataclass_field
+from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from email.message import Message
 from enum import Enum, auto
 from importlib import metadata as importlib_metadata
@@ -37,6 +38,7 @@ from importlib.metadata import Distribution
 from pathlib import Path
 from typing import Callable, Generator, Iterator
 
+from license_expression import ExpressionError, Licensing
 
 __pkgname__ = "pip-licenses-lib"
 __version__ = "0.5.0"
@@ -417,15 +419,38 @@ def select_license_by_source(
     :param license_meta: The license data retrieved from the package metadata.
     :return: The selected licenses.
     """
-    license_classifier_set = set(license_classifier) or {LICENSE_UNKNOWN}
     if (
-            from_source == FromArg.CLASSIFIER
-            or from_source == FromArg.MIXED
-            and len(license_classifier) > 0
+        from_source == FromArg.CLASSIFIER
+        or from_source == FromArg.MIXED
+        and len(license_classifier) > 0
     ):
-        return license_classifier_set
+        return set(license_classifier) or {LICENSE_UNKNOWN}
     else:
-        return {license_meta}
+        return (
+            _parse_spdx(license_meta)
+            if _is_valid_spdx(license_meta)
+            else {license_meta}
+        )
+
+
+def _is_valid_spdx(spdx_expression: str) -> bool:
+    """Check if the license expression is valid."""
+    try:
+        Licensing().parse(spdx_expression)
+        return True
+    except ExpressionError:
+        return False
+
+
+def _parse_spdx(
+    expression: str,
+) -> set[str]:
+    """Parse a license expression and return a set of licenses."""
+    licensing = Licensing()
+    parsed = licensing.parse(expression)
+    if parsed is None:
+        return set()
+    return {license for license in parsed.objects}
 
 
 class NoValueEnum(Enum):

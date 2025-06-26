@@ -25,6 +25,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -35,11 +36,11 @@ from enum import Enum, auto
 from importlib import metadata as importlib_metadata
 from importlib.metadata import Distribution
 from pathlib import Path
-from typing import Callable, Generator, Iterator
+from typing import Callable, cast, Generator, Iterator
 
 
 __pkgname__ = "pip-licenses-lib"
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 __author__ = "raimon, stefan6419846"
 __license__ = "MIT"
 __summary__ = (
@@ -335,13 +336,13 @@ def get_python_sys_path(executable: os.PathLike[str] | str) -> list[str]:
     :param executable: The Python executable to run for.
     :return: The corresponding `sys.path` entries.
     """
-    script = "import sys; print(' '.join(filter(bool, sys.path)))"
+    script = "import json, sys; print(json.dumps(list(filter(bool, sys.path))))"
     output: subprocess.CompletedProcess[bytes] = subprocess.run(
         [executable, "-c", script],
         capture_output=True,
         env={**os.environ, "PYTHONPATH": "", "VIRTUAL_ENV": ""},
     )
-    return output.stdout.decode().strip().split()
+    return cast(list[str], json.loads(output.stdout))
 
 
 def get_packages(

@@ -50,7 +50,7 @@ from piplicenses_lib import (  # type: ignore[attr-defined]
     get_packages,
     get_package_included_files,
     get_package_info,
-    LICENSE_UNKNOWN,
+    get_python_sys_path, LICENSE_UNKNOWN,
     normalize_package_name,
     PackageInfo,
     read_file,
@@ -69,8 +69,8 @@ class EnvBuilder(_EnvBuilder):
 
 
 @contextmanager
-def create_temporary_venv(additional_packages: list[str] | None = None) -> Generator[EnvBuilder, None, None]:
-    with TemporaryDirectory() as environment_path:
+def create_temporary_venv(additional_packages: list[str] | None = None, directory: Path | None = None) -> Generator[EnvBuilder, None, None]:
+    with TemporaryDirectory(dir=directory) as environment_path:
         venv_builder = EnvBuilder(with_pip=True)
         venv_builder.create(environment_path)
 
@@ -543,3 +543,26 @@ class FromArgTestCase(TestCase):
             with self.subTest(name=name):
                 value = getattr(FromArg, name)
                 self.assertEqual(f"<FromArg.{name}>", repr(value))
+
+
+class GetPythonSysPathTestCase(TestCase):
+    def assert_entries(self, entries: list[str]) -> None:
+        self.assertNotEqual([], entries)
+        for entry in entries:
+            path = Path(entry)
+            if path.suffix == '.zip':
+                continue
+            self.assertTrue(path.exists(), entry)
+
+    def test_get_python_sys_path(self) -> None:
+        with create_temporary_venv() as venv:
+            entries = get_python_sys_path(venv.executable)
+            self.assert_entries(entries)
+
+    def test_get_python_sys_path__whitespace_in_path(self) -> None:
+        with TemporaryDirectory() as tempdir:
+            directory = Path(tempdir, 'foo bar')
+            directory.mkdir()
+            with create_temporary_venv(directory=directory) as venv:
+                entries = get_python_sys_path(venv.executable)
+                self.assert_entries(entries)

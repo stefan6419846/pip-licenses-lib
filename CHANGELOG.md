@@ -1,7 +1,10 @@
 # Development version
 
+# Version 0.6.0 - 2025-06-26
+
 * Avoid returning packages twice when `sys.path` includes directories which are
-  identical after resolving symlinks. 
+  identical after resolving symlinks.
+* Fix handling of paths containing whitespace when retrieving `sys.path`.
 
 # Version 0.5.0 - 2025-01-07
 

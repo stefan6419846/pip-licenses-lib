@@ -335,13 +335,14 @@ def get_python_sys_path(executable: os.PathLike[str] | str) -> list[str]:
     :param executable: The Python executable to run for.
     :return: The corresponding `sys.path` entries.
     """
-    script = "import sys; print(' '.join(filter(bool, sys.path)))"
+    separator = "nY4cTVoNWF5d2"
+    script = f"import sys; print('{separator}'.join(filter(bool, sys.path)))"
     output: subprocess.CompletedProcess[bytes] = subprocess.run(
         [executable, "-c", script],
         capture_output=True,
         env={**os.environ, "PYTHONPATH": "", "VIRTUAL_ENV": ""},
     )
-    return output.stdout.decode().strip().split()
+    return output.stdout.decode().strip().split(separator)
 
 
 def get_packages(

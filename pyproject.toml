@@ -49,8 +49,9 @@ dev = [
     "mypy",
     "types-requests",
     # Test code
-    "requests",
+    "coverage",
     "pypdf",
+    "requests",
     # Spelling
     "codespell",
 ]
@@ -77,7 +78,11 @@ namespaces = false
 strict = true
 files = "piplicenses_lib,tests"
 
+[tool.coverage.run]
+branch = true
+include = ["piplicenses_lib/*"]
+
 [tool.codespell]
-skip = './.git/*,./.mypy*,./venv*,./docs/_build/*,./docs/importlib.metadata-inv.txt,'
+skip = './.git/*,./.mypy*,./venv*,./docs/_build/*,./htmlcov/*'
 check-hidden = true
 ignore-words-list = 'assertIn,'

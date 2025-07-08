@@ -434,7 +434,7 @@ class NoValueEnum(Enum):
     Enumeration which has no usable/readable values defined.
     """
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}.{self.name}>"
 
 

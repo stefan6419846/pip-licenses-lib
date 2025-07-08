@@ -30,13 +30,13 @@ import shutil
 import subprocess
 import sys
 from contextlib import contextmanager
-from importlib.metadata import PathDistribution
+from importlib.metadata import PackagePath, PathDistribution
 from operator import attrgetter
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
 from typing import cast, Any, Generator, Union
-from unittest import TestCase
+from unittest import mock, TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
 
@@ -203,6 +203,19 @@ class GetPackageIncludedFilesTestCase(TestCase):
             str(self.pypdf.locate_file("pypdf/_encryption.py")),
             paths
         )
+
+    def test_get_package_included_file__directory_match(self) -> None:
+        with TemporaryDirectory() as package_directory:
+            matching_directory = Path(package_directory, "ignore1")
+            matching_directory.mkdir()
+            matching_file = Path(package_directory, "ignore2")
+            matching_file.write_text("Test")
+
+            distribution = PathDistribution(Path(package_directory))
+            files = [PackagePath(matching_directory), PackagePath(matching_file)]
+            with mock.patch("importlib.metadata.Distribution.files", new_callable=mock.PropertyMock(return_value=files)):
+                results = list(get_package_included_files(package=distribution, file_names_regex=r".*ignore.*"))
+        self.assertEqual([(str(matching_file), "Test")], results)
 
 
 class DummyDistribution:

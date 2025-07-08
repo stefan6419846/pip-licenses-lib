@@ -26,7 +26,10 @@ jobs:
           python -m pip install .[dev]
       - name: test
         run: 
-          python -m unittest discover --verbose --start-directory tests/
+          coverage run -m unittest discover --verbose --start-directory tests/
+      - name: Report coverage
+        run: |
+          python -m coverage report --fail-under=100
       - name: lint
         run:
           flake8

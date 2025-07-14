@@ -308,9 +308,9 @@ class GetPackageInfoTestCase(TestCase):
                 self.assertEqual("https://github.com/py-pdf/pypdf", package_info.homepage)
                 self.assertEqual("Mathieu Fenniak <biziqe@mathieu.fenniak.net>", package_info.author)
                 self.assertEqual("stefan6419846", package_info.maintainer)
-                self.assertEqual(LICENSE_UNKNOWN, package_info.license)
+                self.assertEqual("BSD-3-Clause", package_info.license)
                 self.assertEqual("A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files", package_info.summary)
-                self.assertEqual(["BSD License"], package_info.license_classifiers)
+                self.assertEqual([], package_info.license_classifiers)
                 self.assertIn('black ; extra == "dev"', package_info.requirements)
 
     def test_get_package_info__normalize_name(self) -> None:

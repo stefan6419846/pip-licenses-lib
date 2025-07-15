@@ -273,11 +273,12 @@ class PackageInfoTestCase(TestCase):
 
 
 class GetPackageInfoTestCase(TestCase):
-    def assertStartsWith(self, expected: str, actual: str, message: str | None = None) -> None:  # noqa: N802
-        self.assertEqual(expected, actual[:len(expected)], message)
+    if sys.version_info < (3, 14):
+        def assertStartsWith(self, actual: str, prefix: str, message: str | None = None) -> None:  # noqa: N802
+            self.assertEqual(prefix, actual[:len(prefix)], message)
 
-    def assertEndsWith(self, expected: str, actual: str, message: str | None = None) -> None:  # noqa: N802
-        self.assertEqual(expected, actual[-len(expected):], message)
+        def assertEndsWith(self, actual: str, suffix: str, message: str | None = None) -> None:  # noqa: N802
+            self.assertEqual(suffix, actual[-len(suffix):], message)
 
     def test_get_package_info(self) -> None:
         import pypdf
@@ -295,10 +296,10 @@ class GetPackageInfoTestCase(TestCase):
                 license_texts = list(package_info.license_texts)
                 if include_files:
                     self.assertEqual(1, len(license_files), license_files)
-                    self.assertEndsWith(".dist-info/licenses/LICENSE", license_files[0])
+                    self.assertEndsWith(license_files[0], ".dist-info/licenses/LICENSE")
                     self.assertEqual(1, len(license_texts), license_texts)
-                    self.assertStartsWith("Copyright (c) 2006-2008, Mathieu Fenniak\nSome contributions copyright (c) 2007, Ashish", license_texts[0])
-                    self.assertEndsWith(", EVEN IF ADVISED OF THE\nPOSSIBILITY OF SUCH DAMAGE.\n", license_texts[0])
+                    self.assertStartsWith(license_texts[0], "Copyright (c) 2006-2008, Mathieu Fenniak\nSome contributions copyright (c) 2007, Ashish")
+                    self.assertEndsWith(license_texts[0], ", EVEN IF ADVISED OF THE\nPOSSIBILITY OF SUCH DAMAGE.\n")
                 else:
                     self.assertEqual([], license_files)
                     self.assertEqual([], license_texts)

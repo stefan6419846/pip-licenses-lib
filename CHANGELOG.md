@@ -1,5 +1,7 @@
 # Development version
 
+* Ensure compatibility with Python 3.14. The changes only affect testing.
+
 # Version 0.6.0 - 2025-06-26
 
 * Avoid returning packages twice when `sys.path` includes directories which are

@@ -181,7 +181,7 @@ def _locate_license_file(package: Distribution, name: str) -> Optional[Path]:
     """
     if not isinstance(package, PathDistribution):
         return None
-    path = package._path / "licenses" / name
+    path = Path(package._path / "licenses" / name)
     if path.is_file():
         # Built distributions and installed projects.
         return path

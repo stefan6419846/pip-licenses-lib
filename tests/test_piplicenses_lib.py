@@ -32,6 +32,7 @@ import sys
 from contextlib import contextmanager
 from importlib.metadata import PackagePath, PathDistribution
 from operator import attrgetter
+from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
@@ -43,7 +44,7 @@ from venv import EnvBuilder as _EnvBuilder
 
 import requests
 from piplicenses_lib import (  # type: ignore[attr-defined]
-    Distribution,
+    _locate_license_file, Distribution,
     extract_homepage,
     find_license_from_classifier,
     FromArg,
@@ -221,13 +222,14 @@ class GetPackageIncludedFilesTestCase(TestCase):
 class DummyDistribution:
     class MyDict(CaseInsensitiveDict[Any]):
         def get_all(self, key: str, default: Any | None = None) -> list[Any]:
+            key = key.replace("-", "_")
             value = self.get(key, default=default)
             if not isinstance(value, list):
-                raise ValueError("get_all called for non-list value")
+                raise ValueError(f"get_all called for non-list value with key {key!r}")
             return value
 
     def __init__(self, name: str = "dummy", version: str = "42"):
-        self.metadata = self.MyDict(name=name)
+        self.metadata = self.MyDict(name=name, license_file=[])
         self.files: list[Any] = []
         self.version = version
         self.requires: list[str] = []
@@ -313,6 +315,7 @@ class GetPackageInfoTestCase(TestCase):
                 self.assertEqual("A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files", package_info.summary)
                 self.assertEqual([], package_info.license_classifiers)
                 self.assertIn('black ; extra == "dev"', package_info.requirements)
+                self.assertEqual([], list(package_info.other_files))
 
     def test_get_package_info__normalize_name(self) -> None:
         distribution = DummyDistribution()
@@ -400,9 +403,46 @@ class GetPackageInfoTestCase(TestCase):
             fd.seek(0)
             with TemporaryDirectory() as directory:
                 shutil.unpack_archive(filename=fd.name, extract_dir=directory)
-                webob = PathDistribution(Path(directory, "ftfy-6.3.0.dist-info"))
-                package_info = get_package_info(webob)
-                self.assertEqual('Apache-2.0', package_info.license)
+                ftfy = PathDistribution(Path(directory, "ftfy-6.3.0.dist-info"))
+                package_info = get_package_info(ftfy)
+                self.assertEqual("Apache-2.0", package_info.license)
+
+    def test_get_package_info__file_classification(self) -> None:
+        with NamedTemporaryFile(suffix=".zip") as fd:
+            response = requests.get(url="https://files.pythonhosted.org/packages/f5/af/6593f6d21404e842007b40fdeb81e73c20b6649b82d020bb0801b270174c/django-5.2.6-py3-none-any.whl")  # noqa: E501
+            self.assertEqual(200, response.status_code, response)
+            fd.write(response.content)
+            fd.seek(0)
+            with TemporaryDirectory() as directory:
+                shutil.unpack_archive(filename=fd.name, extract_dir=directory)
+                django = PathDistribution(Path(directory, "django-5.2.6.dist-info"))
+                package_info = get_package_info(django)
+                self.assertListEqual(
+                    [
+                        "/django/contrib/admin/static/admin/css/vendor/select2/LICENSE-SELECT2.md",
+                        "/django/contrib/admin/static/admin/img/LICENSE",
+                        "/django/contrib/admin/static/admin/js/vendor/jquery/LICENSE.txt",
+                        "/django/contrib/admin/static/admin/js/vendor/select2/LICENSE.md",
+                        "/django/contrib/admin/static/admin/js/vendor/xregexp/LICENSE.txt",
+                        "/django/contrib/gis/gdal/LICENSE",
+                        "/django/contrib/gis/geos/LICENSE",
+                        "/django/dispatch/license.txt",
+                        "/django-5.2.6.dist-info/licenses/LICENSE",
+                        "/django-5.2.6.dist-info/licenses/LICENSE.python"
+                    ],
+                    [license_file.replace(directory, "") for license_file in package_info.license_files]
+                )
+                self.assertListEqual([], list(package_info.notice_files))
+                self.assertListEqual(
+                    [
+                        "/django-5.2.6.dist-info/licenses/AUTHORS",
+                    ],
+                    [other_file.replace(directory, "") for other_file in package_info.other_files]
+                )
+                self.assertIn(
+                    "Django was originally created in late 2003 at World Online, the web division\nof the Lawrence Journal",
+                    list(package_info.other_texts)[0]
+                )
 
 
 class GetPackagesTestCase(TestCase):
@@ -583,3 +623,16 @@ class GetPythonSysPathTestCase(TestCase):
             with create_temporary_venv(directory=directory) as venv:
                 entries = get_python_sys_path(venv.executable)
                 self.assert_entries(entries)
+
+
+class LocateLicenseFileTestCase(TestCase):
+    def test_no_path_distribution(self) -> None:
+        class MyDistribution(Distribution):
+            def locate_file(self, path: str | PathLike[str]) -> Path:
+                return Path("/path/to/file.py")
+
+            def read_text(self, filename: str) -> str:
+                return "Hello World!"
+
+        distribution = MyDistribution()
+        self.assertIsNone(_locate_license_file(distribution, "dummy.txt"))

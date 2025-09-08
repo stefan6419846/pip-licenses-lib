@@ -25,6 +25,7 @@
 
 from __future__ import annotations
 
+import itertools
 import json
 import os
 import re
@@ -34,10 +35,10 @@ from dataclasses import dataclass, field as dataclass_field
 from email.message import Message
 from enum import Enum, auto
 from importlib import metadata as importlib_metadata
-from importlib.metadata import Distribution
+from importlib.metadata import Distribution, PathDistribution
+from operator import itemgetter
 from pathlib import Path
-from typing import Callable, cast, Generator, Iterator
-
+from typing import Callable, cast, Generator, Iterable, Iterator, Optional
 
 __pkgname__ = "pip-licenses-lib"
 __version__ = "0.6.0"
@@ -168,6 +169,43 @@ def get_package_included_files(
         yield included_file, included_text
 
 
+def _locate_license_file(package: Distribution, name: str) -> Optional[Path]:
+    """
+    Resolve the given License-File value to an actual path according to PEP 639.
+
+    References: https://peps.python.org/pep-0639/#license-files-in-project-formats
+
+    :param package: The package to work on.
+    :param name: The name of the license file to find.
+    :return: The corresponding path for valid cases, `None` otherwise.
+    """
+    if not isinstance(package, PathDistribution):
+        return None
+    path = package._path / "licenses" / name
+    if path.is_file():
+        # Built distributions and installed projects.
+        return path
+    # Do not care about source distributions, as these are never installed directly.
+    return None
+
+
+def _get_other_files(package: Distribution, existing_files: Iterable[tuple[str, str]]) -> Generator[tuple[str, str]]:
+    """
+    Get other License-File entries.
+
+    :param package: The package to work on.
+    :param existing_files: The files already covered by license and notice file matching.
+    :return: A list/generator of tuples holding the file path and corresponding file content.
+    """
+    known_names = set(map(itemgetter(0), existing_files))
+    for other_file in package.metadata.get_all("License-File") or []:
+        other_file_resolved = _locate_license_file(package, other_file)
+        other_file_str = str(other_file_resolved)
+        if other_file_resolved is None or other_file_str in known_names:
+            continue
+        yield other_file_str, read_file(other_file_resolved)
+
+
 @dataclass
 class PackageInfo:
     """
@@ -234,6 +272,11 @@ class PackageInfo:
     List of notice files and their contents.
     """
 
+    others: list[tuple[str, str]] = dataclass_field(default_factory=list)
+    """
+    List of other licensing-related files and their contents.
+    """
+
     requirements: set[str] = dataclass_field(default_factory=set)
     """
     Collection of all declared (direct) requirements.
@@ -278,6 +321,22 @@ class PackageInfo:
         for entry in self.notices:
             yield entry[1]
 
+    @property
+    def other_files(self) -> Iterator[str]:
+        """
+        List of other licensing-related file paths.
+        """
+        for entry in self.others:
+            yield entry[0]
+
+    @property
+    def other_texts(self) -> Iterator[str]:
+        """
+        List of other licensing-related texts.
+        """
+        for entry in self.others:
+            yield entry[1]
+
 
 def get_package_info(
         package: Distribution, include_files: bool = True, normalize_name: bool = True,
@@ -295,9 +354,11 @@ def get_package_info(
             package, "LICEN[CS]E.*|COPYING.*"
         ))
         notice_files = list(get_package_included_files(package, "NOTICE.*"))
+        other_files = list(_get_other_files(package, itertools.chain(license_files, notice_files)))
     else:
         license_files = []
         notice_files = []
+        other_files = []
 
     name = package.metadata["name"]
     if normalize_name:
@@ -307,6 +368,7 @@ def get_package_info(
         version=package.version,
         licenses=license_files,
         notices=notice_files,
+        others=other_files,
         requirements=set(package.requires or []),
         distribution=package,
     )

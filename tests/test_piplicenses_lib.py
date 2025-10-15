@@ -36,7 +36,7 @@ from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
-from typing import Any, Generator
+from typing import Any, cast, Generator
 from unittest import mock, TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
@@ -159,6 +159,7 @@ class ReadFileTestCase(TestCase):
             fd.seek(0)
             for path in [fd.name, Path(fd.name)]:
                 with self.subTest(path=path):
+                    path = cast(str | Path, path)
                     self.assertEqual("Test text\nabc\n", read_file(path))
 
     def test_read_file__replace(self) -> None:

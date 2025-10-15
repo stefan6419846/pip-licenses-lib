@@ -38,7 +38,7 @@ from importlib import metadata as importlib_metadata
 from importlib.metadata import Distribution, PathDistribution
 from operator import itemgetter
 from pathlib import Path
-from typing import Callable, cast, Generator, Iterable, Iterator, Optional
+from typing import Callable, cast, Generator, Iterable, Iterator
 
 __pkgname__ = "pip-licenses-lib"
 __version__ = "0.6.0"
@@ -161,7 +161,7 @@ def get_package_included_files(
         lambda entry: pattern.match(entry.name), package_files
     )
     for relative_path in matched_relative_paths:
-        absolute_path = Path(package.locate_file(relative_path))  # type: ignore[arg-type,unused-ignore]  # TODO: Unused only required for Python <= 3.9.
+        absolute_path = Path(package.locate_file(relative_path))  # type: ignore[arg-type]
         if not absolute_path.is_file():
             continue
         included_file = str(absolute_path)
@@ -169,7 +169,7 @@ def get_package_included_files(
         yield included_file, included_text
 
 
-def _locate_license_file(package: Distribution, name: str) -> Optional[Path]:
+def _locate_license_file(package: Distribution, name: str) -> Path | None:
     """
     Resolve the given License-File value to an actual path according to PEP 639.
 
@@ -378,7 +378,7 @@ def get_package_info(
         for field_selector_function in field_selector_functions:
             # Type hint of `Distribution.metadata` states `PackageMetadata`
             # but it's actually of type `email.Message`
-            value = field_selector_function(metadata)  # type: ignore[arg-type,unused-ignore]  # noqa: E501  # FIXME: Remove `unused-ignore` when dropping Python <= 3.9.
+            value = field_selector_function(metadata)  # type: ignore[arg-type]
             if value:
                 break
         setattr(package_info, field_name, value or LICENSE_UNKNOWN)

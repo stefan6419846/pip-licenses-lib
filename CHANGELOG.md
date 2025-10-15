@@ -1,6 +1,7 @@
 # Development version
 
 * Add support for the `License-File` field for specifying additional licensing-related files (PEP 639).
+* Drop support for Python <= 3.9.
 * Ensure compatibility with Python 3.14. The changes only affect testing.
 
 # Version 0.6.0 - 2025-06-26

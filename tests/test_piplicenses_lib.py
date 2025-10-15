@@ -36,7 +36,7 @@ from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
-from typing import cast, Any, Generator, Union
+from typing import Any, Generator
 from unittest import mock, TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
@@ -70,7 +70,7 @@ class EnvBuilder(_EnvBuilder):
 
 
 @contextmanager
-def create_temporary_venv(additional_packages: list[str] | None = None, directory: Path | None = None) -> Generator[EnvBuilder, None, None]:
+def create_temporary_venv(additional_packages: list[str] | None = None, directory: Path | None = None) -> Generator[EnvBuilder]:
     with TemporaryDirectory(dir=directory) as environment_path:
         venv_builder = EnvBuilder(with_pip=True)
         venv_builder.create(environment_path)
@@ -158,7 +158,6 @@ class ReadFileTestCase(TestCase):
             fd.write("Test text\nabc\n")
             fd.seek(0)
             for path in [fd.name, Path(fd.name)]:
-                path = cast(Union[str, Path], path)  # TODO: Drop class when removing Python 3.9.
                 with self.subTest(path=path):
                     self.assertEqual("Test text\nabc\n", read_file(path))
 

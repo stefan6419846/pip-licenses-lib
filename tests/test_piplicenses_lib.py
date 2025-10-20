@@ -458,7 +458,7 @@ class GetPackagesTestCase(TestCase):
             self.assertNotIn("setuptools", package_names)
 
     def test_get_packages__includes_license_names(self) -> None:
-        with create_temporary_venv() as venv:
+        with create_temporary_venv(additional_packages=["pypdf"]) as venv:
             packages = get_packages(from_source=FromArg.MIXED, python_path=venv.executable)
             license_names = {
                 package.name: package.license_names for package in packages
@@ -471,12 +471,8 @@ class GetPackagesTestCase(TestCase):
             else:
                 self.assertIn("MIT", license_names[package])
 
-        # `setuptools` is not being shipped by default anymore since Python 3.12.
-        if sys.version_info < (3, 12):
-            self.assertTrue(license_names.get("setuptools"))
-            self.assertIn("MIT License", license_names["setuptools"])
-        else:
-            self.assertFalse(license_names.get("setuptools"))
+        self.assertTrue(license_names.get("pypdf"))
+        self.assertIn("BSD-3-Clause", license_names["pypdf"])
 
     def test_get_packages__python_path(self) -> None:
         with create_temporary_venv() as venv:

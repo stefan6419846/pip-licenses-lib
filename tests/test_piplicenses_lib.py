@@ -488,11 +488,8 @@ class GetPackagesTestCase(TestCase):
     def test_get_packages__duplicate_path(self) -> None:
         with create_temporary_venv() as venv:
             venv_path = Path(venv.executable).parent.parent
-            if sys.version_info < (3, 15):
-                self.assertEqual(
-                    venv_path.joinpath("lib").resolve(),
-                    venv_path.joinpath("lib64").resolve()
-                )
+            if venv_path.joinpath("lib").resolve() != venv_path.joinpath("lib64").resolve():
+                raise self.skipTest("lib and lib64 do not point to same directory.")
             packages = get_packages(from_source=FromArg.MIXED, python_path=venv.executable)
             package_names = sorted(map(attrgetter("name"), packages))
 

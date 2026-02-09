@@ -314,7 +314,7 @@ class GetPackageInfoTestCase(TestCase):
                 self.assertEqual("BSD-3-Clause", package_info.license)
                 self.assertEqual("A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files", package_info.summary)
                 self.assertEqual([], package_info.license_classifiers)
-                self.assertIn('black ; extra == "dev"', package_info.requirements)
+                self.assertIn('pytest-socket ; extra == "dev"', package_info.requirements)
                 self.assertEqual([], list(package_info.other_files))
 
     def test_get_package_info__normalize_name(self) -> None:

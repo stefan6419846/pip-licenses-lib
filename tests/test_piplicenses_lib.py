@@ -87,7 +87,16 @@ class ExtractHomepageTestCase(TestCase):
         metadata.get.return_value = "Foobar"
         self.assertEqual("Foobar", extract_homepage(metadata=metadata))
 
-        metadata.get.assert_called_once_with("home-page", None)
+        metadata.get.assert_called_once_with("home-page")
+
+    def test_extract_homepage__preferred__cleaning(self) -> None:
+        for value in ["Homepage", "Home-page", "Home page", "homepage", "GitHub", "Documentation"]:
+            with self.subTest(value=value):
+                metadata = MagicMock()
+                metadata.get.return_value = None
+                metadata.get_all.return_value = [f"{value}, Foobar"]
+                self.assertEqual("Foobar", extract_homepage(metadata=metadata))
+                metadata.get_all.assert_called_once_with("Project-URL", [])
 
     def test_extract_homepage__project_url_fallback(self) -> None:
         metadata = MagicMock()
@@ -125,7 +134,7 @@ class ExtractHomepageTestCase(TestCase):
 
         self.assertIsNone(extract_homepage(metadata=metadata))
 
-        metadata.get.assert_called_once_with("home-page", None)
+        metadata.get.assert_called_once_with("home-page")
         metadata.get_all.assert_called_once_with("Project-URL", [])
 
     def test_extract_homepage__project_url_fallback__capitalisation(self) -> None:

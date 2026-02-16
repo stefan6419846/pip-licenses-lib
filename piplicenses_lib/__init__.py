@@ -29,6 +29,7 @@ import itertools
 import json
 import os
 import re
+import string
 import subprocess
 import sys
 from dataclasses import dataclass, field as dataclass_field
@@ -54,30 +55,45 @@ def extract_homepage(metadata: Message) -> str | None:
     """
     Extracts the homepage attribute from the package metadata.
 
-    Not all Python packages have defined a home-page attribute.
-    As a fallback, the `Project-URL` metadata can be used.
-    The python core metadata supports multiple (free text) values for
-    the `Project-URL` field that are comma separated.
+    Some packages might use the legacy direct `home-page` key, while
+    most use the project URLs field. With its free-text behavior,
+    multiple candidates are available to choose from.
 
     :param metadata: The package metadata to extract the homepage from.
-    :return: The home page if applicable, None otherwise.
+    :return: The homepage if applicable, None otherwise.
     """
-    homepage: str | None = metadata.get("homepage", None)
-    if homepage is not None:
-        return homepage
-
     candidates: dict[str, str] = {}
+    value: str | None
 
     for entry in metadata.get_all("Project-URL", []):
+        # https://packaging.python.org/en/latest/specifications/well-known-project-urls/#label-normalization
+        chars_to_remove = string.punctuation + string.whitespace
+        removal_map = str.maketrans("", "", chars_to_remove)
         key, value = entry.split(",", 1)
-        candidates[key.strip().lower()] = value.strip()
+        label = key.translate(removal_map).lower()
+        candidates[label] = value.strip()
 
+    if value := candidates.get("homepage"):
+        # Primary value.
+        return value
+    if value := metadata.get("home-page"):
+        # Legacy value.
+        return value
+
+    # https://packaging.python.org/en/latest/specifications/well-known-project-urls/#well-known-labels
     for priority_key in [
-            "home-page",
             "source",
+            "sourcecode",
             "repository",
+            "github",
+            "documentation",
+            "docs",
+            "bugtracker",
+            "issues",
             "changelog",
-            "bug tracker",
+            "changes",
+            "whatsnew",
+            "releasenotes",
     ]:
         if priority_key in candidates:
             return candidates[priority_key]

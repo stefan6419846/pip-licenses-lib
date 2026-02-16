@@ -1,5 +1,7 @@
 # Development version
 
+* Update handling of homepage value to align with well-known project URL recommendations.
+
 # Version 1.0.0 - 2025-10-20
 
 * Add support for the `License-File` field for specifying additional licensing-related files (PEP 639).

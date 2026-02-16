@@ -62,7 +62,7 @@ def extract_homepage(metadata: Message) -> str | None:
     :param metadata: The package metadata to extract the homepage from.
     :return: The home page if applicable, None otherwise.
     """
-    homepage: str | None = metadata.get("home-page", None)
+    homepage: str | None = metadata.get("homepage", None)
     if homepage is not None:
         return homepage
 
@@ -73,7 +73,7 @@ def extract_homepage(metadata: Message) -> str | None:
         candidates[key.strip().lower()] = value.strip()
 
     for priority_key in [
-            "homepage",
+            "home-page",
             "source",
             "repository",
             "changelog",

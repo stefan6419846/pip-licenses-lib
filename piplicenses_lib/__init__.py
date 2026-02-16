@@ -42,7 +42,7 @@ from pathlib import Path
 from typing import Callable, cast, Generator, Iterable, Iterator
 
 __pkgname__ = "pip-licenses-lib"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "raimon, stefan6419846"
 __license__ = "MIT"
 __summary__ = (

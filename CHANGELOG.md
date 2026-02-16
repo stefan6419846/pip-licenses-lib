@@ -1,5 +1,7 @@
 # Development version
 
+# Version 1.1.0 - 2026-02-16
+
 * Add support for retrieving SBOM files (PEP 770).
 * Update handling of homepage value to align with well-known project URL recommendations.
 

@@ -44,7 +44,7 @@ from venv import EnvBuilder as _EnvBuilder
 
 import requests
 from piplicenses_lib import (  # type: ignore[attr-defined]
-    _locate_license_file, Distribution,
+    _get_sboms, _locate_license_file, Distribution,
     extract_homepage,
     find_license_from_classifier,
     FromArg,
@@ -453,6 +453,35 @@ class GetPackageInfoTestCase(TestCase):
                     list(package_info.other_texts)[0]
                 )
 
+    def test_get_package_info__sbom(self) -> None:
+        with NamedTemporaryFile(suffix=".zip") as fd:
+            response = requests.get(url="https://files.pythonhosted.org/packages/6f/84/c0dc75c7fb596135f999e59a410d9f45bdabb989f1cb911f0016d22b747b/nh3-0.3.3-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl")  # noqa: E501
+            self.assertEqual(200, response.status_code, response)
+            fd.write(response.content)
+            fd.seek(0)
+            with TemporaryDirectory() as directory:
+                shutil.unpack_archive(filename=fd.name, extract_dir=directory)
+                nh3 = PathDistribution(Path(directory, "nh3-0.3.3.dist-info"))
+                package_info = get_package_info(nh3)
+                self.assertListEqual(
+                    [
+                        "/nh3-0.3.3.dist-info/licenses/LICENSE",
+                    ],
+                    [license_file.replace(directory, "") for license_file in package_info.license_files]
+                )
+                self.assertListEqual([], list(package_info.notice_files))
+                self.assertListEqual([], list(package_info.other_files))
+                self.assertListEqual(
+                    [
+                        "/nh3-0.3.3.dist-info/sboms/nh3.cyclonedx.json",
+                    ],
+                    [sbom.replace(directory, "") for sbom in package_info.sbom_files]
+                )
+                self.assertIn(
+                    '"serialNumber": "urn:uuid:917b66b0-e134-453c-bd31-d885f17781c5",',
+                    list(package_info.sbom_texts)[0]
+                )
+
 
 class GetPackagesTestCase(TestCase):
     def test_get_packages(self) -> None:
@@ -639,3 +668,30 @@ class LocateLicenseFileTestCase(TestCase):
 
         distribution = MyDistribution()
         self.assertIsNone(_locate_license_file(distribution, "dummy.txt"))
+
+
+class GetSbomsTestCase(TestCase):
+    def test_no_path_distribution(self) -> None:
+        class MyDistribution(Distribution):
+            def locate_file(self, path: str | PathLike[str]) -> Path:
+                return Path("/path/to/file.py")
+
+            def read_text(self, filename: str) -> str:
+                return "Hello World!"
+
+        distribution = MyDistribution()
+        self.assertListEqual([], list(_get_sboms(distribution)))
+
+    def test_sboms_directory_empty(self) -> None:
+        with TemporaryDirectory() as directory:
+            class MyDistribution(Distribution):
+                _path = Path(directory)
+
+                def locate_file(self, path: str | PathLike[str]) -> Path:
+                    return Path("/path/to/file.py")
+
+                def read_text(self, filename: str) -> str:
+                    return "Hello World!"
+
+            distribution = MyDistribution()
+            self.assertListEqual([], list(_get_sboms(distribution)))

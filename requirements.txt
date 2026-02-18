@@ -5,6 +5,6 @@ flake8==7.3.0
 flake8-bugbear==25.11.29
 mypy==1.19.1
 pep8-naming==0.15.1
-pypdf==6.7.0
+pypdf==6.7.1
 requests==2.32.5
 types-requests==2.32.4.20260107

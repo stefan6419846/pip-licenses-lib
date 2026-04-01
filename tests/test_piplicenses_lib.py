@@ -230,9 +230,9 @@ class GetPackageIncludedFilesTestCase(TestCase):
 
 class DummyDistribution:
     class MyDict(CaseInsensitiveDict[Any]):
-        def get_all(self, key: str, default: Any | None = None) -> list[Any]:
+        def get_all(self, key: str, default: Any = None) -> list[Any]:
             key = key.replace("-", "_")
-            value = self.get(key, default=default)
+            value = self.get(key, default)
             if not isinstance(value, list):
                 raise ValueError(f"get_all called for non-list value with key {key!r}")
             return value

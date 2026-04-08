@@ -40,6 +40,12 @@ Changes compared to the original version:
   * Do not use abbreviations for naming purposes.
   * Rewrite tests to use plain *unittest* functionality.
 
+## Limitations
+
+  * If you use this package in an environment with `setuptools>=71`, the results might be inconsistent if
+    `setuptools` is imported before running *pip-licenses-lib*. This is to `setuptools` modifying `sys.path`
+    and inserting its vendored package path there. [Upstream issue](https://github.com/pypa/setuptools/issues/5213)
+
 ## Installation
 
 You can install this package from PyPI:

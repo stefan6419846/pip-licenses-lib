@@ -327,7 +327,8 @@ class GetPackageInfoTestCase(TestCase):
                 self.assertEqual("pypdf", package_info.name)
                 self.assertEqual(version, package_info.version)
                 self.assertEqual(f"pypdf {version}", package_info.name_version)
-                license_files = normalize_files(package_info.license_files, Path(sysconfig.get_path("purelib")))
+                site_packages_dir = Path(sysconfig.get_path("purelib"))
+                license_files = normalize_files(package_info.license_files, site_packages_dir)
                 license_texts = list(package_info.license_texts)
                 if include_files:
                     self.assertEqual(1, len(license_files), license_files)

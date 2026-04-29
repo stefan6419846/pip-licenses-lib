@@ -26,11 +26,9 @@ SOFTWARE.
 """
 from __future__ import annotations
 
-import platform
 import subprocess
 import sys
 import sysconfig
-import unittest
 from contextlib import contextmanager
 from importlib.metadata import PackagePath, PathDistribution
 from io import BytesIO
@@ -184,22 +182,25 @@ class NormalizePackageNameTestCase(TestCase):
                 self.assertEqual(expected_normalized_name, normalize_package_name(name))
 
 
-@unittest.skipIf(platform.system() == "Windows", "test is broken on Windows")
 class ReadFileTestCase(TestCase):
     def test_read_file__regular(self) -> None:
-        with NamedTemporaryFile(mode="w+t") as fd:
+        with NamedTemporaryFile(mode="w+t", delete=False) as fd:
+            filename = fd.name
+            self.addCleanup(Path(filename).unlink)
             fd.write("Test text\nabc\n")
-            fd.seek(0)
-            for path in [fd.name, Path(fd.name)]:
-                with self.subTest(path=path):
-                    path = cast(str | Path, path)
-                    self.assertEqual("Test text\nabc\n", read_file(path))
+
+        for path in [filename, Path(filename)]:
+            with self.subTest(path=path):
+                path = cast(str | Path, path)
+                self.assertEqual("Test text\nabc\n", read_file(path))
 
     def test_read_file__replace(self) -> None:
-        with NamedTemporaryFile(mode="w+b") as fd:
+        with NamedTemporaryFile(mode="w+b", delete=False) as fd:
+            filename = fd.name
+            self.addCleanup(Path(filename).unlink)
             fd.write(b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x42abc123")
-            fd.seek(0)
-            self.assertEqual("\x00\x01\x02\x03\x04\x05\x06\x07\x08\tBabc123", read_file(fd.name))
+
+        self.assertEqual("\x00\x01\x02\x03\x04\x05\x06\x07\x08\tBabc123", read_file(filename))
 
 
 class GetPackageIncludedFilesTestCase(TestCase):

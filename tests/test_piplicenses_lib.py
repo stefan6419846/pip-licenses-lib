@@ -25,16 +25,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from __future__ import annotations
-import unittest
-import platform
-from zipfile import ZipFile
-from io import BytesIO
 
+import platform
 import subprocess
 import sys
 import sysconfig
+import unittest
 from contextlib import contextmanager
 from importlib.metadata import PackagePath, PathDistribution
+from io import BytesIO
 from operator import attrgetter
 from os import PathLike
 from pathlib import Path
@@ -44,6 +43,7 @@ from typing import Any, cast, Generator, Iterable
 from unittest import mock, TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
+from zipfile import ZipFile
 
 
 import requests

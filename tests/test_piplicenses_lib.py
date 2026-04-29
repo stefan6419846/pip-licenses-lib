@@ -452,7 +452,8 @@ class GetPackageInfoTestCase(TestCase):
             self.assertListEqual(
                 [
                     "/django-5.2.6.dist-info/licenses/AUTHORS",
-                ], normalize_files(package_info.other_files, directory)
+                ],
+                normalize_files(package_info.other_files, directory)
             )
             self.assertIn(
                 "Django was originally created in late 2003 at World Online, the web division\nof the Lawrence Journal",

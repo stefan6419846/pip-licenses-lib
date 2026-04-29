@@ -88,7 +88,7 @@ def create_temporary_venv(additional_packages: list[str] | None = None, director
 @contextmanager
 def download_and_extract_zipfile(url: str) -> Generator[Path]:
     """Download a zip file from a given URL and extract it to a temporary directory.
-    
+
     :return: path of temporary directory
     """
     response = requests.get(url=url)
@@ -182,6 +182,7 @@ class NormalizePackageNameTestCase(TestCase):
         for name in ["pip_licenses", "pip.licenses", "Pip-Licenses"]:
             with self.subTest(name=name):
                 self.assertEqual(expected_normalized_name, normalize_package_name(name))
+
 
 @unittest.skipIf(platform.system() == "Windows", "test is broken on Windows")
 class ReadFileTestCase(TestCase):
@@ -420,7 +421,7 @@ class GetPackageInfoTestCase(TestCase):
                 [str(Path(directory) / "WebOb-1.8.8.dist-info" / "license.txt")],
                 license_files,
             )
-    
+
     def test_get_package_info__license_expression_field_from_real_package(self) -> None:
         with download_and_extract_zipfile("https://files.pythonhosted.org/packages/76/0f/d8a8152e720cbcad890e56ee98639ff489f1992869b4cf304c3fa24d4bcc/ftfy-6.3.0-py3-none-any.whl") as directory:  # noqa: E501
             ftfy = PathDistribution(Path(directory, "ftfy-6.3.0.dist-info"))
@@ -443,13 +444,13 @@ class GetPackageInfoTestCase(TestCase):
                     "/django/dispatch/license.txt",
                     "/django-5.2.6.dist-info/licenses/LICENSE",
                     "/django-5.2.6.dist-info/licenses/LICENSE.python"
-                ],normalize_files(package_info.license_files, directory)
+                ], normalize_files(package_info.license_files, directory)
             )
             self.assertListEqual([], list(package_info.notice_files))
             self.assertListEqual(
                 [
                     "/django-5.2.6.dist-info/licenses/AUTHORS",
-                ],normalize_files(package_info.other_files, directory)
+                ], normalize_files(package_info.other_files, directory)
             )
             self.assertIn(
                 "Django was originally created in late 2003 at World Online, the web division\nof the Lawrence Journal",

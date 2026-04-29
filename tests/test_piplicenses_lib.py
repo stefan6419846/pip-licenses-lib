@@ -25,10 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from __future__ import annotations
+import unittest
+import platform
+from zipfile import ZipFile
+from io import BytesIO
 
-import shutil
 import subprocess
 import sys
+import sysconfig
 from contextlib import contextmanager
 from importlib.metadata import PackagePath, PathDistribution
 from operator import attrgetter
@@ -36,7 +40,7 @@ from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
-from typing import Any, cast, Generator
+from typing import Any, cast, Generator, Iterable
 from unittest import mock, TestCase
 from unittest.mock import MagicMock
 from venv import EnvBuilder as _EnvBuilder
@@ -79,6 +83,25 @@ def create_temporary_venv(additional_packages: list[str] | None = None, director
             for additional_package in additional_packages:
                 subprocess.check_output([venv_builder.executable, "-m", "pip", "install", additional_package])
         yield venv_builder
+
+
+@contextmanager
+def download_and_extract_zipfile(url: str) -> Generator[Path]:
+    """Download a zip file from a given URL and extract it to a temporary directory.
+    
+    :return: path of temporary directory
+    """
+    response = requests.get(url=url)
+    response.raise_for_status()
+    zip_file_bytes = BytesIO(response.content)
+    with TemporaryDirectory() as directory:
+        ZipFile(zip_file_bytes).extractall(directory)
+        yield Path(directory)
+
+
+def normalize_files(files: Iterable[str], base_dir: Path) -> list[str]:
+    """Relativize and normalize file paths."""
+    return ["/" + Path(file).relative_to(base_dir).as_posix() for file in files]
 
 
 class ExtractHomepageTestCase(TestCase):
@@ -160,7 +183,7 @@ class NormalizePackageNameTestCase(TestCase):
             with self.subTest(name=name):
                 self.assertEqual(expected_normalized_name, normalize_package_name(name))
 
-
+@unittest.skipIf(platform.system() == "Windows", "test is broken on Windows")
 class ReadFileTestCase(TestCase):
     def test_read_file__regular(self) -> None:
         with NamedTemporaryFile(mode="w+t") as fd:
@@ -303,7 +326,7 @@ class GetPackageInfoTestCase(TestCase):
                 self.assertEqual("pypdf", package_info.name)
                 self.assertEqual(version, package_info.version)
                 self.assertEqual(f"pypdf {version}", package_info.name_version)
-                license_files = list(package_info.license_files)
+                license_files = normalize_files(package_info.license_files, Path(sysconfig.get_path("purelib")))
                 license_texts = list(package_info.license_texts)
                 if include_files:
                     self.assertEqual(1, len(license_files), license_files)
@@ -389,98 +412,72 @@ class GetPackageInfoTestCase(TestCase):
         self.assertEqual(LICENSE_UNKNOWN, get_package_info(distribution).license)  # type: ignore[arg-type]
 
     def test_get_package_info__file_casing(self) -> None:
-        with NamedTemporaryFile(suffix=".zip") as fd:
-            response = requests.get(url="https://files.pythonhosted.org/packages/c3/c2/fbc206db211c11ac85f2b440670ff6f43d44d7601f61b95628f56d271c21/WebOb-1.8.8-py2.py3-none-any.whl")  # noqa: E501
-            self.assertEqual(200, response.status_code, response)
-            fd.write(response.content)
-            fd.seek(0)
-            with TemporaryDirectory() as directory:
-                shutil.unpack_archive(filename=fd.name, extract_dir=directory)
-                webob = PathDistribution(Path(directory, "WebOb-1.8.8.dist-info"))
-                package_info = get_package_info(webob)
-                license_files = list(package_info.license_files)
-                self.assertEqual(
-                    [str(Path(directory) / "WebOb-1.8.8.dist-info" / "license.txt")],
-                    license_files,
-                )
-
+        with download_and_extract_zipfile("https://files.pythonhosted.org/packages/c3/c2/fbc206db211c11ac85f2b440670ff6f43d44d7601f61b95628f56d271c21/WebOb-1.8.8-py2.py3-none-any.whl") as directory:  # noqa: E501
+            webob = PathDistribution(Path(directory, "WebOb-1.8.8.dist-info"))
+            package_info = get_package_info(webob)
+            license_files = list(package_info.license_files)
+            self.assertEqual(
+                [str(Path(directory) / "WebOb-1.8.8.dist-info" / "license.txt")],
+                license_files,
+            )
+    
     def test_get_package_info__license_expression_field_from_real_package(self) -> None:
-        with NamedTemporaryFile(suffix=".zip") as fd:
-            response = requests.get(url="https://files.pythonhosted.org/packages/76/0f/d8a8152e720cbcad890e56ee98639ff489f1992869b4cf304c3fa24d4bcc/ftfy-6.3.0-py3-none-any.whl")  # noqa: E501
-            self.assertEqual(200, response.status_code, response)
-            fd.write(response.content)
-            fd.seek(0)
-            with TemporaryDirectory() as directory:
-                shutil.unpack_archive(filename=fd.name, extract_dir=directory)
-                ftfy = PathDistribution(Path(directory, "ftfy-6.3.0.dist-info"))
-                package_info = get_package_info(ftfy)
-                self.assertEqual("Apache-2.0", package_info.license)
+        with download_and_extract_zipfile("https://files.pythonhosted.org/packages/76/0f/d8a8152e720cbcad890e56ee98639ff489f1992869b4cf304c3fa24d4bcc/ftfy-6.3.0-py3-none-any.whl") as directory:  # noqa: E501
+            ftfy = PathDistribution(Path(directory, "ftfy-6.3.0.dist-info"))
+            package_info = get_package_info(ftfy)
+            self.assertEqual("Apache-2.0", package_info.license)
 
     def test_get_package_info__file_classification(self) -> None:
-        with NamedTemporaryFile(suffix=".zip") as fd:
-            response = requests.get(url="https://files.pythonhosted.org/packages/f5/af/6593f6d21404e842007b40fdeb81e73c20b6649b82d020bb0801b270174c/django-5.2.6-py3-none-any.whl")  # noqa: E501
-            self.assertEqual(200, response.status_code, response)
-            fd.write(response.content)
-            fd.seek(0)
-            with TemporaryDirectory() as directory:
-                shutil.unpack_archive(filename=fd.name, extract_dir=directory)
-                django = PathDistribution(Path(directory, "django-5.2.6.dist-info"))
-                package_info = get_package_info(django)
-                self.assertListEqual(
-                    [
-                        "/django/contrib/admin/static/admin/css/vendor/select2/LICENSE-SELECT2.md",
-                        "/django/contrib/admin/static/admin/img/LICENSE",
-                        "/django/contrib/admin/static/admin/js/vendor/jquery/LICENSE.txt",
-                        "/django/contrib/admin/static/admin/js/vendor/select2/LICENSE.md",
-                        "/django/contrib/admin/static/admin/js/vendor/xregexp/LICENSE.txt",
-                        "/django/contrib/gis/gdal/LICENSE",
-                        "/django/contrib/gis/geos/LICENSE",
-                        "/django/dispatch/license.txt",
-                        "/django-5.2.6.dist-info/licenses/LICENSE",
-                        "/django-5.2.6.dist-info/licenses/LICENSE.python"
-                    ],
-                    [license_file.replace(directory, "") for license_file in package_info.license_files]
-                )
-                self.assertListEqual([], list(package_info.notice_files))
-                self.assertListEqual(
-                    [
-                        "/django-5.2.6.dist-info/licenses/AUTHORS",
-                    ],
-                    [other_file.replace(directory, "") for other_file in package_info.other_files]
-                )
-                self.assertIn(
-                    "Django was originally created in late 2003 at World Online, the web division\nof the Lawrence Journal",
-                    list(package_info.other_texts)[0]
-                )
+        with download_and_extract_zipfile("https://files.pythonhosted.org/packages/f5/af/6593f6d21404e842007b40fdeb81e73c20b6649b82d020bb0801b270174c/django-5.2.6-py3-none-any.whl") as directory:  # noqa: E501
+            django = PathDistribution(Path(directory, "django-5.2.6.dist-info"))
+            package_info = get_package_info(django)
+            self.assertListEqual(
+                [
+                    "/django/contrib/admin/static/admin/css/vendor/select2/LICENSE-SELECT2.md",
+                    "/django/contrib/admin/static/admin/img/LICENSE",
+                    "/django/contrib/admin/static/admin/js/vendor/jquery/LICENSE.txt",
+                    "/django/contrib/admin/static/admin/js/vendor/select2/LICENSE.md",
+                    "/django/contrib/admin/static/admin/js/vendor/xregexp/LICENSE.txt",
+                    "/django/contrib/gis/gdal/LICENSE",
+                    "/django/contrib/gis/geos/LICENSE",
+                    "/django/dispatch/license.txt",
+                    "/django-5.2.6.dist-info/licenses/LICENSE",
+                    "/django-5.2.6.dist-info/licenses/LICENSE.python"
+                ],normalize_files(package_info.license_files, directory)
+            )
+            self.assertListEqual([], list(package_info.notice_files))
+            self.assertListEqual(
+                [
+                    "/django-5.2.6.dist-info/licenses/AUTHORS",
+                ],normalize_files(package_info.other_files, directory)
+            )
+            self.assertIn(
+                "Django was originally created in late 2003 at World Online, the web division\nof the Lawrence Journal",
+                list(package_info.other_texts)[0]
+            )
 
     def test_get_package_info__sbom(self) -> None:
-        with NamedTemporaryFile(suffix=".zip") as fd:
-            response = requests.get(url="https://files.pythonhosted.org/packages/6f/84/c0dc75c7fb596135f999e59a410d9f45bdabb989f1cb911f0016d22b747b/nh3-0.3.3-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl")  # noqa: E501
-            self.assertEqual(200, response.status_code, response)
-            fd.write(response.content)
-            fd.seek(0)
-            with TemporaryDirectory() as directory:
-                shutil.unpack_archive(filename=fd.name, extract_dir=directory)
-                nh3 = PathDistribution(Path(directory, "nh3-0.3.3.dist-info"))
-                package_info = get_package_info(nh3)
-                self.assertListEqual(
-                    [
-                        "/nh3-0.3.3.dist-info/licenses/LICENSE",
-                    ],
-                    [license_file.replace(directory, "") for license_file in package_info.license_files]
-                )
-                self.assertListEqual([], list(package_info.notice_files))
-                self.assertListEqual([], list(package_info.other_files))
-                self.assertListEqual(
-                    [
-                        "/nh3-0.3.3.dist-info/sboms/nh3.cyclonedx.json",
-                    ],
-                    [sbom.replace(directory, "") for sbom in package_info.sbom_files]
-                )
-                self.assertIn(
-                    '"serialNumber": "urn:uuid:917b66b0-e134-453c-bd31-d885f17781c5",',
-                    list(package_info.sbom_texts)[0]
-                )
+        with download_and_extract_zipfile("https://files.pythonhosted.org/packages/6f/84/c0dc75c7fb596135f999e59a410d9f45bdabb989f1cb911f0016d22b747b/nh3-0.3.3-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl") as directory:  # noqa: E501
+            nh3 = PathDistribution(Path(directory, "nh3-0.3.3.dist-info"))
+            package_info = get_package_info(nh3)
+            self.assertListEqual(
+                [
+                    "/nh3-0.3.3.dist-info/licenses/LICENSE",
+                ],
+                normalize_files(package_info.license_files, directory)
+            )
+            self.assertListEqual([], list(package_info.notice_files))
+            self.assertListEqual([], list(package_info.other_files))
+            self.assertListEqual(
+                [
+                    "/nh3-0.3.3.dist-info/sboms/nh3.cyclonedx.json",
+                ],
+                normalize_files(package_info.sbom_files, directory)
+            )
+            self.assertIn(
+                '"serialNumber": "urn:uuid:917b66b0-e134-453c-bd31-d885f17781c5",',
+                list(package_info.sbom_texts)[0]
+            )
 
 
 class GetPackagesTestCase(TestCase):

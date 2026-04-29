@@ -99,9 +99,9 @@ def download_and_extract_zipfile(url: str) -> Generator[Path]:
         yield Path(directory)
 
 
-def normalize_files(files: Iterable[str], base_dir: Path) -> list[str]:
+def normalize_files(filenames: Iterable[str], base_dir: Path) -> list[str]:
     """Relativize and normalize file paths."""
-    return ["/" + Path(file).relative_to(base_dir).as_posix() for file in files]
+    return ["/" + Path(filename).relative_to(base_dir).as_posix() for filename in filenames]
 
 
 class ExtractHomepageTestCase(TestCase):

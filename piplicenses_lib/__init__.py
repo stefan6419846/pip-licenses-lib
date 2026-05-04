@@ -395,6 +395,18 @@ class PackageInfo:
         for entry in self.sboms:
             yield entry[1]
 
+    def is_metadata_file(self, path: str) -> bool:
+        """
+        Check whether the given package file is part of the metadata directory, like `*.dist-info`.
+
+        :param path: The package file path to check.
+        :return: The check result. Always `False` for not path-based distributions.
+        """
+        if not isinstance(self.distribution, PathDistribution):
+            return False
+        path = path.removeprefix("/")
+        return path.startswith(Path(str(self.distribution._path)).name)
+
 
 def get_package_info(
         package: Distribution, include_files: bool = True, normalize_name: bool = True,

@@ -79,7 +79,7 @@ def create_temporary_venv(additional_packages: list[str] | None = None, director
 
         if additional_packages:
             for additional_package in additional_packages:
-                subprocess.check_output([venv_builder.executable, "-m", "pip", "install", additional_package])
+                subprocess.check_output([venv_builder.executable, "-m", "pip", "install", "--disable-pip-version-check", additional_package])
         yield venv_builder
 
 
@@ -291,6 +291,12 @@ class PackageInfoTestCase(TestCase):
             ["First license text", "This is my text."],
             list(package.license_texts)
         )
+        self.assertFalse(
+            package.is_metadata_file("/path/to/license1")
+        )
+        self.assertFalse(
+            package.is_metadata_file("path/to/license1")
+        )
 
     def test_notices(self) -> None:
         package = PackageInfo(name="my-package", version="1.2.4-rc1", distribution=DummyDistribution())  # type: ignore[arg-type]
@@ -458,6 +464,21 @@ class GetPackageInfoTestCase(TestCase):
             self.assertIn(
                 "Django was originally created in late 2003 at World Online, the web division\nof the Lawrence Journal",
                 list(package_info.other_texts)[0]
+            )
+            self.assertTrue(
+                package_info.is_metadata_file("/django-5.2.6.dist-info/licenses/LICENSE.python")
+            )
+            self.assertTrue(
+                package_info.is_metadata_file("django-5.2.6.dist-info/licenses/LICENSE.python")
+            )
+            self.assertTrue(
+                package_info.is_metadata_file("/django-5.2.6.dist-info/licenses/AUTHORS")
+            )
+            self.assertFalse(
+                package_info.is_metadata_file("/django/contrib/admin/static/admin/img/LICENSE")
+            )
+            self.assertFalse(
+                package_info.is_metadata_file("django/contrib/admin/static/admin/img/LICENSE")
             )
 
     def test_get_package_info__sbom(self) -> None:

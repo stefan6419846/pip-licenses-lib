@@ -1,5 +1,10 @@
 # Development version
 
+# Version 1.2.0 - 2026-05-05
+
+* Allow checking whether a given file is part of the metadata or actual package directory.
+* Fix unit tests for Windows.
+
 # Version 1.1.0 - 2026-02-16
 
 * Add support for retrieving SBOM files (PEP 770).

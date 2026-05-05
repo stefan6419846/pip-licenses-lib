@@ -1,5 +1,9 @@
 # Development version
 
+# Version 1.2.1 - 2026-05-05
+
+* Fix metadata directory checks.
+
 # Version 1.2.0 - 2026-05-05
 
 * Allow checking whether a given file is part of the metadata or actual package directory.

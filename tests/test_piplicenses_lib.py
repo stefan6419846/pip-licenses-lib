@@ -466,19 +466,13 @@ class GetPackageInfoTestCase(TestCase):
                 list(package_info.other_texts)[0]
             )
             self.assertTrue(
-                package_info.is_metadata_file("/django-5.2.6.dist-info/licenses/LICENSE.python")
+                package_info.is_metadata_file(list(package_info.license_files)[-1])
             )
             self.assertTrue(
-                package_info.is_metadata_file("django-5.2.6.dist-info/licenses/LICENSE.python")
-            )
-            self.assertTrue(
-                package_info.is_metadata_file("/django-5.2.6.dist-info/licenses/AUTHORS")
+                package_info.is_metadata_file(list(package_info.other_files)[0])
             )
             self.assertFalse(
-                package_info.is_metadata_file("/django/contrib/admin/static/admin/img/LICENSE")
-            )
-            self.assertFalse(
-                package_info.is_metadata_file("django/contrib/admin/static/admin/img/LICENSE")
+                package_info.is_metadata_file(list(package_info.license_files)[1])
             )
 
     def test_get_package_info__sbom(self) -> None:

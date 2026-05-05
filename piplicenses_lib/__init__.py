@@ -404,8 +404,7 @@ class PackageInfo:
         """
         if not isinstance(self.distribution, PathDistribution):
             return False
-        path = path.removeprefix("/")
-        return path.startswith(Path(str(self.distribution._path)).name)
+        return Path(path).is_relative_to(Path(str(self.distribution._path)))
 
 
 def get_package_info(

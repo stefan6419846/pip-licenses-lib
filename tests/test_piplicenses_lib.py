@@ -26,6 +26,7 @@ SOFTWARE.
 """
 from __future__ import annotations
 
+import platform
 import subprocess
 import sys
 import sysconfig
@@ -497,6 +498,17 @@ class GetPackageInfoTestCase(TestCase):
                 '"serialNumber": "urn:uuid:917b66b0-e134-453c-bd31-d885f17781c5",',
                 list(package_info.sbom_texts)[0]
             )
+
+    def test_get_package_info__backslash_in_record_path(self) -> None:
+        url = (
+            "https://files.pythonhosted.org/packages/87/44/90fa543014c45560cae1fffc63ea059fb3575ee6e1cb654562197e5d16fb/ruff-0.14.14-py3-none-win_amd64.whl"  # noqa: E501
+            if platform.system() == "Windows" else
+            "https://files.pythonhosted.org/packages/ca/71/37daa46f89475f8582b7762ecd2722492df26421714a33e72ccc9a84d7a5/ruff-0.14.14-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"  # noqa: E501
+        )
+        with download_and_extract_zipfile(url) as directory:
+            ruff = PathDistribution(Path(directory, "ruff-0.14.14.dist-info"))
+            package_info = get_package_info(ruff)
+            self.assertListEqual(["/ruff-0.14.14.dist-info/licenses/LICENSE"], normalize_files(package_info.license_files, directory))
 
 
 class GetPackagesTestCase(TestCase):

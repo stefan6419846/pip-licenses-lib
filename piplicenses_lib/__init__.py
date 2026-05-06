@@ -42,7 +42,7 @@ from pathlib import Path
 from typing import Callable, cast, Generator, Iterable, Iterator
 
 __pkgname__ = "pip-licenses-lib"
-__version__ = "1.1.0"
+__version__ = "1.2.1"
 __author__ = "raimon, stefan6419846"
 __license__ = "MIT"
 __summary__ = (
@@ -394,6 +394,17 @@ class PackageInfo:
         """
         for entry in self.sboms:
             yield entry[1]
+
+    def is_metadata_file(self, path: str) -> bool:
+        """
+        Check whether the given package file is part of the metadata directory, like `*.dist-info`.
+
+        :param path: The package file path to check.
+        :return: The check result. Always `False` for not path-based distributions.
+        """
+        if not isinstance(self.distribution, PathDistribution):
+            return False
+        return Path(path).is_relative_to(Path(str(self.distribution._path)))
 
 
 def get_package_info(

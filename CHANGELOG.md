@@ -1,5 +1,9 @@
 # Development version
 
+# Version 1.2.2 - 2026-05-07
+
+* Fix license file detection when RECORD contains backslash.
+
 # Version 1.2.1 - 2026-05-05
 
 * Fix metadata directory checks.

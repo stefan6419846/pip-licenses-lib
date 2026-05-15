@@ -7,4 +7,4 @@ mypy==2.0.0
 pep8-naming==0.15.1
 pypdf==6.10.2
 requests==2.33.1
-types-requests==2.33.0.20260503
+types-requests==2.33.0.20260508

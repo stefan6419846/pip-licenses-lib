@@ -47,7 +47,6 @@ dev = [
     "flake8-bugbear",
     "pep8-naming",
     "mypy",
-    "types-requests",
     # Test code
     "coverage",
     "pypdf",

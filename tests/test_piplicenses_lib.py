@@ -60,7 +60,7 @@ from piplicenses_lib import (  # type: ignore[attr-defined]
     read_file,
     select_license_by_source
 )
-from requests.utils import CaseInsensitiveDict
+from requests.utils import CaseInsensitiveDict  # type: ignore[attr-defined]
 
 
 class EnvBuilder(_EnvBuilder):

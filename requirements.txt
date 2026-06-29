@@ -1,6 +1,6 @@
 # Allow testing with latest versions.
 codespell==2.4.2
-coverage==7.14.1
+coverage==7.14.2
 flake8==7.3.0
 flake8-bugbear==25.11.29
 mypy==2.1.0

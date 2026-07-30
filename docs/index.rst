@@ -3,7 +3,7 @@ Welcome to pip-licenses-lib's documentation!
 
 Retrieve the software license list of Python packages installed with `pip`.
 
-If you are looking for a CLI based upon this library which is compatible with *pip-licenses*,
+If you are looking for a CLI based upon this library similar to *pip-licenses*,
 you might want to have a look at `pip-license-cli <https://github.com/stefan6419846/pip-licenses-cli>`_.
 
 GitHub: `pip-license-lib <https://github.com/stefan6419846/pip-licenses-lib>`_

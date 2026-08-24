@@ -3,7 +3,7 @@ codespell==2.4.3
 coverage==7.15.4
 flake8==7.3.0
 flake8-bugbear==25.11.29
-mypy==2.3.0
+mypy==2.3.1
 pep8-naming==0.15.1
 pypdf==6.16.0
 requests==2.34.2

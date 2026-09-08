@@ -2,7 +2,7 @@
 
 Retrieve the software license list of Python packages installed with *pip*.
 
-If you are looking for a CLI based upon this library which is similar tocompatible with *pip-licenses*,
+If you are looking for a CLI based upon this library which is similar to with *pip-licenses*,
 you might want to have a look at [pip-licenses-cli](https://github.com/stefan6419846/pip-licenses-cli).
 
 ## About
@@ -24,7 +24,8 @@ create this fork with the required modifications and enhancements to suit my cur
 
 ## Differences to pip-licenses
 
-Changes compared to the original version:
+Changes compared to original version as of release 5.0.0 (newer releases of *pip-licenses*
+have changed/fixed some of these):
 
   * Use `dataclasses.dataclass` instead of a dictionary for each package information result.
   * Remove all output/rendering functionality.
@@ -35,8 +36,6 @@ Changes compared to the original version:
   * Include the license names and distribution object inside the results.
   * Add an option to skip retrieving license and notice files for faster version-only checks.
   * Add an option to normalize returned package names.
-  * Enable support for Python < 3.8 by using the `importlib_metadata` backport.
-    * This has been changed in the meantime. Please use `piplicenses-lib<=0.4.1` if you need to support Python < 3.9. 
   * Do not use abbreviations for naming purposes.
   * Rewrite tests to use plain *unittest* functionality.
 

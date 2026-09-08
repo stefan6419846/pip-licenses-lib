@@ -29,7 +29,8 @@ As parsing the license data of packages as provided by the maintainers is at lea
 Differences to pip-licenses
 ---------------------------
 
-Changes compared to original version:
+Changes compared to original version as of release 5.0.0 (newer releases of *pip-licenses*
+have changed/fixed some of these):
 
 * Use ``dataclasses.dataclass`` instead of a dictionary for each package information result.
 * Remove all output/rendering functionality.
